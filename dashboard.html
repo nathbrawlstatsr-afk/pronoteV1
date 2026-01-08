@@ -1,1 +1,2983 @@
 
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCOLARIS - Tableau de bord</title>
+    <style>
+        :root {
+            --couleur-principale: #2C3E50;
+            --couleur-secondaire: #3498DB;
+            --couleur-accent: #E74C3C;
+            --couleur-success: #27AE60;
+            --couleur-warning: #F39C12;
+            --couleur-fond: #F8F9FA;
+            --couleur-bordure: #E1E5E9;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+        }
+        
+        body {
+            background-color: var(--couleur-fond);
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Header style Pronote */
+        .header-principal {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 0 20px;
+            z-index: 100;
+        }
+        
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--couleur-bordure);
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--couleur-principale);
+        }
+        
+        .etablissement-info {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--couleur-secondaire);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .user-details {
+            text-align: right;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            color: var(--couleur-principale);
+        }
+        
+        .user-role {
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        /* Menu horizontal style Pronote */
+        .menu-horizontal {
+            background-color: white;
+            border-bottom: 1px solid var(--couleur-bordure);
+        }
+        
+        .menu-items {
+            display: flex;
+            list-style: none;
+        }
+        
+        .menu-item {
+            padding: 15px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            font-weight: 500;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .menu-item:hover {
+            background-color: #f8f9fa;
+            color: var(--couleur-principale);
+        }
+        
+        .menu-item.active {
+            border-bottom-color: var(--couleur-secondaire);
+            color: var(--couleur-secondaire);
+            background-color: #f0f7ff;
+        }
+        
+        .menu-item.has-submenu::after {
+            content: "▾";
+            margin-left: 5px;
+            font-size: 0.9rem;
+        }
+        
+        /* Contenu principal */
+        .contenu-principal {
+            flex: 1;
+            overflow-y: auto;
+            padding: 25px;
+        }
+        
+        /* Styles communs */
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: var(--couleur-secondaire);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-secondary {
+            background-color: white;
+            color: var(--couleur-principale);
+            border: 1px solid var(--couleur-bordure);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .btn-success {
+            background-color: var(--couleur-success);
+            color: white;
+        }
+        
+        .btn-danger {
+            background-color: var(--couleur-accent);
+            color: white;
+        }
+        
+        .btn-warning {
+            background-color: var(--couleur-warning);
+            color: white;
+        }
+        
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 0.85rem;
+        }
+        
+        .btn-icon {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            padding: 5px;
+        }
+        
+        .btn-icon:hover {
+            color: var(--couleur-principale);
+        }
+        
+        /* Cards et indicateurs */
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-top: 4px solid var(--couleur-secondaire);
+        }
+        
+        .card-title {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--couleur-principale);
+            margin-bottom: 5px;
+        }
+        
+        .card-subtitle {
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        /* Tableaux */
+        .table-container {
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+        
+        .table-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--couleur-bordure);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .table-title {
+            font-size: 1.1rem;
+            color: var(--couleur-principale);
+            font-weight: 600;
+        }
+        
+        .table-content {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background-color: #F8F9FA;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--couleur-principale);
+            border-bottom: 1px solid var(--couleur-bordure);
+            white-space: nowrap;
+        }
+        
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--couleur-bordure);
+            vertical-align: middle;
+        }
+        
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+        
+        /* Badges */
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .badge-success {
+            background-color: #D5EDDA;
+            color: #155724;
+        }
+        
+        .badge-warning {
+            background-color: #FFF3CD;
+            color: #856404;
+        }
+        
+        .badge-danger {
+            background-color: #F8D7DA;
+            color: #721C24;
+        }
+        
+        .badge-info {
+            background-color: #D1ECF1;
+            color: #0C5460;
+        }
+        
+        /* Formulaires */
+        .form-container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+        
+        .form-title {
+            font-size: 1.2rem;
+            color: var(--couleur-principale);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--couleur-bordure);
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            flex: 1;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--couleur-principale);
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--couleur-bordure);
+            border-radius: 4px;
+            font-size: 0.95rem;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--couleur-secondaire);
+        }
+        
+        /* Emploi du temps */
+        .emploi-temps-container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .emploi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .semaine-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .emploi-grid {
+            display: grid;
+            grid-template-columns: 80px repeat(5, 1fr);
+            gap: 1px;
+            background-color: var(--couleur-bordure);
+            border: 1px solid var(--couleur-bordure);
+        }
+        
+        .emploi-cell {
+            background-color: white;
+            padding: 10px;
+            min-height: 100px;
+            position: relative;
+        }
+        
+        .emploi-heure {
+            background-color: #F8F9FA;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+        
+        .emploi-jour {
+            background-color: #F8F9FA;
+            font-weight: 600;
+            text-align: center;
+            padding: 15px 5px;
+        }
+        
+        .cours-item {
+            padding: 8px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border-left: 3px solid;
+        }
+        
+        .cours-item:hover {
+            opacity: 0.9;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalFadeIn 0.3s;
+        }
+        
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--couleur-bordure);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 1.2rem;
+            color: var(--couleur-principale);
+            font-weight: 600;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid var(--couleur-bordure);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        /* Onglets */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--couleur-bordure);
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-weight: 500;
+            color: #666;
+        }
+        
+        .tab.active {
+            border-bottom-color: var(--couleur-secondaire);
+            color: var(--couleur-secondaire);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Mention légale */
+        .mention-legale {
+            background-color: #FFF3CD;
+            border: 1px solid #FFEAA7;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 30px;
+            font-size: 0.9rem;
+            color: #856404;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .menu-items {
+                overflow-x: auto;
+            }
+            
+            .menu-item {
+                padding: 12px 15px;
+                white-space: nowrap;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header style Pronote -->
+    <header class="header-principal">
+        <div class="header-top">
+            <div class="logo-container">
+                <div class="logo">SCOLARIS</div>
+                <div class="etablissement-info">
+                    <div>Collège Victor Hugo</div>
+                    <div style="font-size: 0.8rem;">2025-2026</div>
+                </div>
+            </div>
+            
+            <div class="user-info">
+                <div class="user-details">
+                    <div class="user-name" id="userName"></div>
+                    <div class="user-role" id="userRole"></div>
+                </div>
+                <div class="user-avatar" id="userAvatar"></div>
+                <button class="btn btn-secondary btn-small" onclick="deconnexion()">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Menu horizontal -->
+        <nav class="menu-horizontal">
+            <ul class="menu-items" id="menuItems">
+                <!-- Menu généré dynamiquement -->
+            </ul>
+        </nav>
+    </header>
+    
+    <!-- Contenu principal -->
+    <main class="contenu-principal" id="contenuPrincipal">
+        <!-- Contenu généré dynamiquement -->
+    </main>
+    
+    <!-- Modals communs -->
+    <div id="modalGenerique" class="modal"></div>
+    
+    <script>
+        // ============================================
+        // DONNÉES ET INITIALISATION
+        // ============================================
+        
+        let SCOLARIS_DATA = JSON.parse(localStorage.getItem('SCOLARIS_DATA'));
+        const user = JSON.parse(localStorage.getItem('SCOLARIS_USER'));
+        
+        if (!user) {
+            window.location.href = 'index.html';
+        }
+        
+        // ============================================
+        // FONCTIONS D'AFFICHAGE PRINCIPALES
+        // ============================================
+        
+        function afficherTableauDeBord() {
+            const html = `
+                <h1 style="margin-bottom: 25px; color: var(--couleur-principale);">Tableau de bord</h1>
+                
+                <div class="cards-container">
+                    <div class="card">
+                        <div class="card-title">
+                            <span>Effectif total</span>
+                            <i class="fas fa-users" style="color: #666;"></i>
+                        </div>
+                        <div class="card-value">${SCOLARIS_DATA.eleves.length}</div>
+                        <div class="card-subtitle">Élèves inscrits</div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-title">
+                            <span>Personnel</span>
+                            <i class="fas fa-chalkboard-teacher" style="color: #666;"></i>
+                        </div>
+                        <div class="card-value">${SCOLARIS_DATA.utilisateurs.filter(u => u.role === 'enseignant' && u.actif).length}</div>
+                        <div class="card-subtitle">Enseignants</div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-title">
+                            <span>Absences du jour</span>
+                            <i class="fas fa-user-clock" style="color: #666;"></i>
+                        </div>
+                        <div class="card-value">${SCOLARIS_DATA.absences.filter(a => a.date === new Date().toISOString().split('T')[0]).length}</div>
+                        <div class="card-subtitle">Élèves absents</div>
+                    </div>
+                    
+                    <div class="card" style="border-top-color: var(--couleur-accent);">
+                        <div class="card-title">
+                            <span>Alertes en attente</span>
+                            <i class="fas fa-exclamation-triangle" style="color: var(--couleur-accent);"></i>
+                        </div>
+                        <div class="card-value">3</div>
+                        <div class="card-subtitle">À traiter</div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group" style="flex: 2;">
+                        <div class="table-container">
+                            <div class="table-header">
+                                <div class="table-title">Dernières absences</div>
+                                <button class="btn btn-primary btn-small" onclick="afficherGestionAbsences()">
+                                    <i class="fas fa-plus"></i> Ajouter
+                                </button>
+                            </div>
+                            <div class="table-content">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Élève</th>
+                                            <th>Classe</th>
+                                            <th>Période</th>
+                                            <th>Justifiée</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${SCOLARIS_DATA.absences.slice(-5).map(absence => {
+                                            const eleve = SCOLARIS_DATA.eleves.find(e => e.id === absence.eleve_id);
+                                            return `
+                                                <tr>
+                                                    <td>${formatDate(absence.date)}</td>
+                                                    <td>${eleve ? eleve.nom + ' ' + eleve.prenom : 'Inconnu'}</td>
+                                                    <td>${eleve ? eleve.classe : ''}</td>
+                                                    <td>${absence.periode === 'matin' ? 'Matin' : 'Après-midi'}</td>
+                                                    <td>${absence.justifiee ? '<span class="badge badge-success">Oui</span>' : '<span class="badge badge-danger">Non</span>'}</td>
+                                                </tr>
+                                            `;
+                                        }).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="flex: 1;">
+                        <div class="table-container">
+                            <div class="table-header">
+                                <div class="table-title">Prochains événements</div>
+                            </div>
+                            <div class="table-content">
+                                <table>
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>18/10</strong></td>
+                                            <td>Conseil de classe 6A</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>22/10</strong></td>
+                                            <td>Commission éducative</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>25/10</strong></td>
+                                            <td>Fin du 1er trimestre</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                ${user.role === 'admin_systeme' || user.role === 'proviseur' ? `
+                <div class="table-container">
+                    <div class="table-header">
+                        <div class="table-title">Statistiques par niveau</div>
+                    </div>
+                    <div class="table-content">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Niveau</th>
+                                    <th>Effectif</th>
+                                    <th>Moyenne générale</th>
+                                    <th>Taux d'absentéisme</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>6ème</strong></td>
+                                    <td>${SCOLARIS_DATA.eleves.filter(e => e.classe.includes('6')).length}</td>
+                                    <td>13.2/20</td>
+                                    <td>2.1%</td>
+                                    <td>
+                                        <button class="btn btn-secondary btn-small">
+                                            <i class="fas fa-chart-bar"></i> Détails
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>5ème</strong></td>
+                                    <td>${SCOLARIS_DATA.eleves.filter(e => e.classe.includes('5')).length}</td>
+                                    <td>12.8/20</td>
+                                    <td>3.5%</td>
+                                    <td>
+                                        <button class="btn btn-secondary btn-small">
+                                            <i class="fas fa-chart-bar"></i> Détails
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                ` : ''}
+                
+                <div class="mention-legale">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Cette plateforme est une simulation fictive à usage pédagogique.
+                </div>
+            `;
+            
+            document.getElementById('contenuPrincipal').innerHTML = html;
+            setActiveMenu('dashboard');
+        }
+        
+        // ============================================
+        // GESTION DES CLASSES (COMPLÈTE)
+        // ============================================
+        
+        function afficherGestionClasses() {
+            const html = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h1 style="color: var(--couleur-principale);">Gestion des classes</h1>
+                    <button class="btn btn-primary" onclick="ouvrirModalNouvelleClasse()">
+                        <i class="fas fa-plus"></i> Nouvelle classe
+                    </button>
+                </div>
+                
+                <div class="tabs">
+                    <div class="tab active" onclick="changerTabClasses('liste')">Liste des classes</div>
+                    <div class="tab" onclick="changerTabClasses('effectifs')">Effectifs par classe</div>
+                    <div class="tab" onclick="changerTabClasses('professeurs')">Professeurs principaux</div>
+                </div>
+                
+                <div id="tabContenuClasses">
+                    <!-- Contenu des onglets -->
+                </div>
+            `;
+            
+            document.getElementById('contenuPrincipal').innerHTML = html;
+            setActiveMenu('classes');
+            afficherListeClasses();
+        }
+        
+        function afficherListeClasses() {
+            let html = `
+                <div class="table-container">
+                    <div class="table-header">
+                        <div class="table-title">Classes de l'établissement</div>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn btn-secondary btn-small" onclick="exporterListeClasses()">
+                                <i class="fas fa-file-export"></i> Exporter
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-content">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Classe</th>
+                                    <th>Niveau</th>
+                                    <th>Professeur principal</th>
+                                    <th>Effectif</th>
+                                    <th>Salle</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${SCOLARIS_DATA.classes.map(classe => {
+                                    const profPrincipal = classe.prof_principal_id ? 
+                                        SCOLARIS_DATA.utilisateurs.find(u => u.id === classe.prof_principal_id) : null;
+                                    const effectif = SCOLARIS_DATA.eleves.filter(e => e.classe_id === classe.id).length;
+                                    
+                                    return `
+                                        <tr>
+                                            <td><strong>${classe.nom}</strong></td>
+                                            <td>${classe.niveau}</td>
+                                            <td>${profPrincipal ? profPrincipal.prenom + ' ' + profPrincipal.nom : 'Non attribué'}</td>
+                                            <td>${effectif} / ${classe.effectif}</td>
+                                            <td>${classe.salle}</td>
+                                            <td>
+                                                <div style="display: flex; gap: 5px;">
+                                                    <button class="btn btn-secondary btn-small" onclick="voirDetailsClasse('${classe.id}')">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    <button class="btn btn-secondary btn-small" onclick="modifierClasse('${classe.id}')">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button class="btn btn-danger btn-small" onclick="supprimerClasse('${classe.id}')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="cards-container" style="margin-top: 30px;">
+                    <div class="card">
+                        <div class="card-title">Récapitulatif</div>
+                        <div class="card-value">${SCOLARIS_DATA.classes.length}</div>
+                        <div class="card-subtitle">Classes actives</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Effectif total</div>
+                        <div class="card-value">${SCOLARIS_DATA.eleves.length}</div>
+                        <div class="card-subtitle">Élèves inscrits</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Taux de remplissage</div>
+                        <div class="card-value">87%</div>
+                        <div class="card-subtitle">Moyenne par classe</div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('tabContenuClasses').innerHTML = html;
+        }
+        
+        function ouvrirModalNouvelleClasse() {
+            const modalHtml = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">Créer une nouvelle classe</div>
+                        <button class="modal-close" onclick="fermerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formNouvelleClasse">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Nom de la classe *</label>
+                                    <input type="text" class="form-control" id="nomClasse" placeholder="Ex: 6ème A" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Niveau *</label>
+                                    <select class="form-control" id="niveauClasse" required>
+                                        <option value="">Sélectionner</option>
+                                        <option value="6ème">6ème</option>
+                                        <option value="5ème">5ème</option>
+                                        <option value="4ème">4ème</option>
+                                        <option value="3ème">3ème</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Professeur principal</label>
+                                    <select class="form-control" id="profPrincipalClasse">
+                                        <option value="">Non attribué</option>
+                                        ${SCOLARIS_DATA.utilisateurs
+                                            .filter(u => u.role === 'enseignant' && u.actif)
+                                            .map(prof => `<option value="${prof.id}">${prof.prenom} ${prof.nom}</option>`)
+                                            .join('')}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Effectif maximum</label>
+                                    <input type="number" class="form-control" id="effectifClasse" value="30" min="1" max="35">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Salle attribuée</label>
+                                    <input type="text" class="form-control" id="salleClasse" placeholder="Ex: Salle 201">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="fermerModal()">Annuler</button>
+                        <button class="btn btn-primary" onclick="creerNouvelleClasse()">Créer la classe</button>
+                    </div>
+                </div>
+            `;
+            
+            ouvrirModal(modalHtml);
+        }
+        
+        function creerNouvelleClasse() {
+            const nom = document.getElementById('nomClasse').value;
+            const niveau = document.getElementById('niveauClasse').value;
+            const profId = document.getElementById('profPrincipalClasse').value;
+            const effectif = parseInt(document.getElementById('effectifClasse').value);
+            const salle = document.getElementById('salleClasse').value;
+            
+            if (!nom || !niveau) {
+                alert('Veuillez remplir les champs obligatoires (*)');
+                return;
+            }
+            
+            // Générer un ID unique
+            const id = nom.replace(/\s+/g, '');
+            
+            // Vérifier si la classe existe déjà
+            if (SCOLARIS_DATA.classes.find(c => c.id === id)) {
+                alert('Une classe avec ce nom existe déjà');
+                return;
+            }
+            
+            const nouvelleClasse = {
+                id: id,
+                nom: nom,
+                niveau: niveau,
+                prof_principal_id: profId ? parseInt(profId) : null,
+                prof_principal: profId ? 
+                    SCOLARIS_DATA.utilisateurs.find(u => u.id === parseInt(profId)).prenom + ' ' + 
+                    SCOLARIS_DATA.utilisateurs.find(u => u.id === parseInt(profId)).nom : 'Non attribué',
+                effectif: effectif,
+                salle: salle
+            };
+            
+            SCOLARIS_DATA.classes.push(nouvelleClasse);
+            sauvegarderDonnees();
+            
+            alert('Classe créée avec succès !');
+            fermerModal();
+            afficherGestionClasses();
+        }
+        
+        function voirDetailsClasse(classeId) {
+            const classe = SCOLARIS_DATA.classes.find(c => c.id === classeId);
+            const elevesClasse = SCOLARIS_DATA.eleves.filter(e => e.classe_id === classeId);
+            
+            const modalHtml = `
+                <div class="modal-content" style="max-width: 800px;">
+                    <div class="modal-header">
+                        <div class="modal-title">Détails de la classe : ${classe.nom}</div>
+                        <button class="modal-close" onclick="fermerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div style="display: flex; gap: 30px; margin-bottom: 25px;">
+                            <div>
+                                <h4 style="color: var(--couleur-principale); margin-bottom: 10px;">Informations</h4>
+                                <p><strong>Niveau :</strong> ${classe.niveau}</p>
+                                <p><strong>Professeur principal :</strong> ${classe.prof_principal}</p>
+                                <p><strong>Salle :</strong> ${classe.salle}</p>
+                                <p><strong>Effectif :</strong> ${elevesClasse.length} / ${classe.effectif} élèves</p>
+                            </div>
+                            <div>
+                                <h4 style="color: var(--couleur-principale); margin-bottom: 10px;">Statistiques</h4>
+                                <p><strong>Moyenne générale :</strong> 13.2/20</p>
+                                <p><strong>Taux d'absentéisme :</strong> 2.1%</p>
+                                <p><strong>Retards ce mois :</strong> 8</p>
+                            </div>
+                        </div>
+                        
+                        <h4 style="color: var(--couleur-principale); margin-bottom: 15px;">Liste des élèves (${elevesClasse.length})</h4>
+                        <div class="table-content" style="max-height: 300px; overflow-y: auto;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Nom</th>
+                                        <th>Prénom</th>
+                                        <th>Date de naissance</th>
+                                        <th>Responsable</th>
+                                        <th>Téléphone</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${elevesClasse.map(eleve => `
+                                        <tr>
+                                            <td>${eleve.nom}</td>
+                                            <td>${eleve.prenom}</td>
+                                            <td>${formatDate(eleve.date_naissance)}</td>
+                                            <td>${eleve.responsable_1}</td>
+                                            <td>${eleve.tel_responsable_1}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="fermerModal()">Fermer</button>
+                        <button class="btn btn-primary" onclick="genererListeClasse('${classeId}')">
+                            <i class="fas fa-print"></i> Imprimer la liste
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            ouvrirModal(modalHtml);
+        }
+        
+        function modifierClasse(classeId) {
+            const classe = SCOLARIS_DATA.classes.find(c => c.id === classeId);
+            
+            const modalHtml = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">Modifier la classe : ${classe.nom}</div>
+                        <button class="modal-close" onclick="fermerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formModifierClasse">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Nom de la classe</label>
+                                    <input type="text" class="form-control" id="nomClasseModif" value="${classe.nom}">
+                                </div>
+                                <div class="form-group">
+                                    <label>Niveau</label>
+                                    <select class="form-control" id="niveauClasseModif">
+                                        <option value="6ème" ${classe.niveau === '6ème' ? 'selected' : ''}>6ème</option>
+                                        <option value="5ème" ${classe.niveau === '5ème' ? 'selected' : ''}>5ème</option>
+                                        <option value="4ème" ${classe.niveau === '4ème' ? 'selected' : ''}>4ème</option>
+                                        <option value="3ème" ${classe.niveau === '3ème' ? 'selected' : ''}>3ème</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Professeur principal</label>
+                                    <select class="form-control" id="profPrincipalClasseModif">
+                                        <option value="">Non attribué</option>
+                                        ${SCOLARIS_DATA.utilisateurs
+                                            .filter(u => u.role === 'enseignant' && u.actif)
+                                            .map(prof => `<option value="${prof.id}" ${classe.prof_principal_id === prof.id ? 'selected' : ''}>${prof.prenom} ${prof.nom}</option>`)
+                                            .join('')}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Effectif maximum</label>
+                                    <input type="number" class="form-control" id="effectifClasseModif" value="${classe.effectif}">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Salle attribuée</label>
+                                    <input type="text" class="form-control" id="salleClasseModif" value="${classe.salle}">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="fermerModal()">Annuler</button>
+                        <button class="btn btn-primary" onclick="sauvegarderModificationClasse('${classeId}')">Enregistrer</button>
+                    </div>
+                </div>
+            `;
+            
+            ouvrirModal(modalHtml);
+        }
+        
+        function sauvegarderModificationClasse(classeId) {
+            const classeIndex = SCOLARIS_DATA.classes.findIndex(c => c.id === classeId);
+            
+            if (classeIndex === -1) return;
+            
+            SCOLARIS_DATA.classes[classeIndex].nom = document.getElementById('nomClasseModif').value;
+            SCOLARIS_DATA.classes[classeIndex].niveau = document.getElementById('niveauClasseModif').value;
+            
+            const profId = document.getElementById('profPrincipalClasseModif').value;
+            SCOLARIS_DATA.classes[classeIndex].prof_principal_id = profId ? parseInt(profId) : null;
+            
+            if (profId) {
+                const prof = SCOLARIS_DATA.utilisateurs.find(u => u.id === parseInt(profId));
+                SCOLARIS_DATA.classes[classeIndex].prof_principal = prof.prenom + ' ' + prof.nom;
+            } else {
+                SCOLARIS_DATA.classes[classeIndex].prof_principal = 'Non attribué';
+            }
+            
+            SCOLARIS_DATA.classes[classeIndex].effectif = parseInt(document.getElementById('effectifClasseModif').value);
+            SCOLARIS_DATA.classes[classeIndex].salle = document.getElementById('salleClasseModif').value;
+            
+            // Mettre à jour les élèves si le nom de la classe a changé
+            const ancienNom = SCOLARIS_DATA.classes[classeIndex].nom;
+            SCOLARIS_DATA.eleves.forEach(eleve => {
+                if (eleve.classe_id === classeId) {
+                    eleve.classe = ancienNom;
+                }
+            });
+            
+            sauvegarderDonnees();
+            alert('Classe modifiée avec succès !');
+            fermerModal();
+            afficherGestionClasses();
+        }
+        
+        function supprimerClasse(classeId) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cette classe ? Cette action est irréversible.')) {
+                return;
+            }
+            
+            // Vérifier si la classe contient des élèves
+            const elevesDansClasse = SCOLARIS_DATA.eleves.filter(e => e.classe_id === classeId);
+            
+            if (elevesDansClasse.length > 0) {
+                if (!confirm(`Cette classe contient ${elevesDansClasse.length} élève(s). Voulez-vous vraiment la supprimer ?`)) {
+                    return;
+                }
+            }
+            
+            // Supprimer la classe
+            SCOLARIS_DATA.classes = SCOLARIS_DATA.classes.filter(c => c.id !== classeId);
+            
+            // Supprimer les élèves de cette classe
+            SCOLARIS_DATA.eleves = SCOLARIS_DATA.eleves.filter(e => e.classe_id !== classeId);
+            
+            sauvegarderDonnees();
+            alert('Classe supprimée avec succès !');
+            afficherGestionClasses();
+        }
+        
+        function genererListeClasse(classeId) {
+            const classe = SCOLARIS_DATA.classes.find(c => c.id === classeId);
+            const elevesClasse = SCOLARIS_DATA.eleves.filter(e => e.classe_id === classeId);
+            
+            const html = `
+                <div style="padding: 30px; font-family: Arial, sans-serif;">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h1>COLLÈGE VICTOR HUGO</h1>
+                        <h2>Liste des élèves - ${classe.nom}</h2>
+                        <p>Année scolaire 2025-2026</p>
+                        <p>Généré le ${new Date().toLocaleDateString('fr-FR')}</p>
+                    </div>
+                    
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
+                        <thead>
+                            <tr style="background-color: #f2f2f2;">
+                                <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">N°</th>
+                                <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Nom</th>
+                                <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Prénom</th>
+                                <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Date de naissance</th>
+                                <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Responsable</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${elevesClasse.map((eleve, index) => `
+                                <tr>
+                                    <td style="padding: 10px; border: 1px solid #ddd;">${index + 1}</td>
+                                    <td style="padding: 10px; border: 1px solid #ddd;">${eleve.nom}</td>
+                                    <td style="padding: 10px; border: 1px solid #ddd;">${eleve.prenom}</td>
+                                    <td style="padding: 10px; border: 1px solid #ddd;">${formatDate(eleve.date_naissance)}</td>
+                                    <td style="padding: 10px; border: 1px solid #ddd;">${eleve.responsable_1}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    
+                    <div style="margin-top: 50px; text-align: right;">
+                        <p>Signature du professeur principal :</p>
+                        <p style="margin-top: 50px;">${classe.prof_principal}</p>
+                    </div>
+                </div>
+            `;
+            
+            const win = window.open('', '_blank');
+            win.document.write(html);
+            win.document.title = `Liste ${classe.nom}`;
+            win.print();
+        }
+        
+        // ============================================
+        // EMPLOI DU TEMPS INTERACTIF
+        // ============================================
+        
+        function afficherEmploiDuTemps() {
+            const userClasses = user.role === 'enseignant' ? 
+                (user.classes || []) : 
+                SCOLARIS_DATA.classes.map(c => c.id);
+            
+            const html = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h1 style="color: var(--couleur-principale);">Emploi du temps</h1>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        ${user.role === 'enseignant' ? `
+                        <button class="btn btn-primary" onclick="ouvrirModalAjoutDevoir()">
+                            <i class="fas fa-plus"></i> Ajouter un devoir
+                        </button>
+                        ` : ''}
+                        <button class="btn btn-secondary" onclick="genererPDFEmploiTemps()">
+                            <i class="fas fa-print"></i> Imprimer
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="emploi-temps-container">
+                    <div class="emploi-header">
+                        <div>
+                            <h3 style="color: var(--couleur-principale); margin-bottom: 5px;">Semaine du 14 au 18 octobre 2025</h3>
+                            <div style="font-size: 0.9rem; color: #666;">
+                                ${user.role === 'enseignant' ? 'Votre emploi du temps' : 'Emploi du temps global'}
+                            </div>
+                        </div>
+                        <div class="semaine-selector">
+                            <button class="btn btn-secondary btn-small">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <select class="form-control" style="width: 200px;">
+                                <option>14-18 octobre 2025</option>
+                                <option>21-25 octobre 2025</option>
+                            </select>
+                            <button class="btn btn-secondary btn-small">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="emploi-grid" id="emploiDuTempsGrid">
+                        <!-- Généré dynamiquement -->
+                    </div>
+                    
+                    <div style="margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 6px;">
+                        <h4 style="color: var(--couleur-principale); margin-bottom: 10px;">
+                            <i class="fas fa-info-circle"></i> Fonctionnalités disponibles
+                        </h4>
+                        <ul style="color: #666; font-size: 0.9rem; line-height: 1.6;">
+                            <li>Cliquez sur un cours pour voir les détails</li>
+                            ${user.role === 'enseignant' ? '<li>Cliquez sur "Présence" pour marquer les absents</li>' : ''}
+                            <li>Les devoirs sont indiqués par l'icône 📝</li>
+                            <li>Exportez l'emploi du temps en PDF</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                ${user.role === 'enseignant' ? `
+                <div class="table-container" style="margin-top: 30px;">
+                    <div class="table-header">
+                        <div class="table-title">Devoirs à donner</div>
+                        <button class="btn btn-primary btn-small" onclick="ouvrirModalAjoutDevoir()">
+                            <i class="fas fa-plus"></i> Nouveau devoir
+                        </button>
+                    </div>
+                    <div class="table-content">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Matière</th>
+                                    <th>Classe</th>
+                                    <th>Pour le</th>
+                                    <th>Description</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="listeDevoirs">
+                                <!-- Généré dynamiquement -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                ` : ''}
+            `;
+            
+            document.getElementById('contenuPrincipal').innerHTML = html;
+            setActiveMenu('emploi_du_temps');
+            genererEmploiDuTemps();
+            
+            if (user.role === 'enseignant') {
+                afficherDevoirsEnseignant();
+            }
+        }
+        
+        function genererEmploiDuTemps() {
+            const jours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'];
+            const creneaux = [
+                { debut: '08:00', fin: '09:00' },
+                { debut: '09:00', fin: '10:00' },
+                { debut: '10:00', fin: '11:00' },
+                { debut: '11:00', fin: '12:00' },
+                { debut: '13:30', fin: '14:30' },
+                { debut: '14:30', fin: '15:30' },
+                { debut: '15:30', fin: '16:30' }
+            ];
+            
+            let gridHtml = '';
+            
+            // En-tête vide
+            gridHtml += `<div class="emploi-cell emploi-heure"></div>`;
+            
+            // Jours de la semaine
+            jours.forEach(jour => {
+                gridHtml += `<div class="emploi-cell emploi-jour">${jour}<br><small>14/10</small></div>`;
+            });
+            
+            // Créneaux horaires
+            creneaux.forEach((horaire, indexHoraire) => {
+                gridHtml += `<div class="emploi-cell emploi-heure">${horaire.debut}<br>${horaire.fin}</div>`;
+                
+                jours.forEach((jour, indexJour) => {
+                    // Générer un cours aléatoire pour la démo
+                    const matieres = SCOLARIS_DATA.matieres;
+                    const classes = user.role === 'enseignant' ? 
+                        (user.classes || ['6A']).map(c => SCOLARIS_DATA.classes.find(cl => cl.id === c)) :
+                        SCOLARIS_DATA.classes.slice(0, 2);
+                    
+                    const matiere = matieres[Math.floor(Math.random() * matieres.length)];
+                    const classe = classes[Math.floor(Math.random() * classes.length)];
+                    
+                    const hasDevoir = Math.random() > 0.7;
+                    const devoir = hasDevoir ? 
+                        SCOLARIS_DATA.devoirs.find(d => d.matiere_id === matiere.id && d.classe_id === classe.id) : null;
+                    
+                    gridHtml += `
+                        <div class="emploi-cell">
+                            ${matiere && classe ? `
+                                <div class="cours-item" 
+                                     style="border-left-color: ${matiere.couleur}; background-color: ${matiere.couleur}15;"
+                                     onclick="voirDetailsCours('${matiere.id}', '${classe.id}', ${indexHoraire}, ${indexJour})">
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                        <div>
+                                            <strong>${matiere.nom}</strong><br>
+                                            <small>${classe.nom} • ${classe.salle}</small>
+                                        </div>
+                                        ${hasDevoir ? '<span title="Devoir à donner">📝</span>' : ''}
+                                    </div>
+                                    ${user.role === 'enseignant' ? `
+                                    <div style="margin-top: 8px;">
+                                        <button class="btn btn-secondary btn-small" style="padding: 2px 8px; font-size: 0.75rem;" 
+                                                onclick="event.stopPropagation(); ouvrirModalPresence('${classe.id}', '${matiere.id}')">
+                                            <i class="fas fa-user-check"></i> Présence
+                                        </button>
+                                        <button class="btn btn-secondary btn-small" style="padding: 2px 8px; font-size: 0.75rem;"
+                                                onclick="event.stopPropagation(); ouvrirModalAjoutDevoirCours('${matiere.id}', '${classe.id}')">
+                                            <i class="fas fa-plus"></i> Devoir
+                                        </button>
+                                    </div>
+                                    ` : ''}
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+            });
+            
+            document.getElementById('emploiDuTempsGrid').innerHTML = gridHtml;
+        }
+        
+        function afficherDevoirsEnseignant() {
+            const devoirsEnseignant = SCOLARIS_DATA.devoirs.filter(d => d.enseignant_id === user.id);
+            
+            let html = '';
+            
+            if (devoirsEnseignant.length === 0) {
+                html = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 30px; color: #666;">
+                            <i class="fas fa-book" style="font-size: 2rem; margin-bottom: 10px; display: block; opacity: 0.5;"></i>
+                            Aucun devoir à donner pour le moment
+                        </td>
+                    </tr>
+                `;
+            } else {
+                devoirsEnseignant.forEach(devoir => {
+                    const matiere = SCOLARIS_DATA.matieres.find(m => m.id === devoir.matiere_id);
+                    const classe = SCOLARIS_DATA.classes.find(c => c.id === devoir.classe_id);
+                    
+                    html += `
+                        <tr>
+                            <td>${matiere ? matiere.nom : 'Inconnu'}</td>
+                            <td>${classe ? classe.nom : 'Inconnu'}</td>
+                            <td>${formatDate(devoir.date_pour)}</td>
+                            <td>${devoir.description}</td>
+                            <td>
+                                <div style="display: flex; gap: 5px;">
+                                    <button class="btn btn-secondary btn-small" onclick="modifierDevoir(${devoir.id})">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-danger btn-small" onclick="supprimerDevoir(${devoir.id})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+            
+            document.getElementById('listeDevoirs').innerHTML = html;
+        }
+        
+        function ouvrirModalPresence(classeId, matiereId) {
+            const classe = SCOLARIS_DATA.classes.find(c => c.id === classeId);
+            const matiere = SCOLARIS_DATA.matieres.find(m => m.id === matiereId);
+            const elevesClasse = SCOLARIS_DATA.eleves.filter(e => e.classe_id === classeId);
+            
+            const modalHtml = `
+                <div class="modal-content" style="max-width: 600px;">
+                    <div class="modal-header">
+                        <div class="modal-title">📋 Fiche de présence</div>
+                        <button class="modal-close" onclick="fermerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div style="margin-bottom: 20px;">
+                            <p><strong>Classe :</strong> ${classe.nom}</p>
+                            <p><strong>Matière :</strong> ${matiere.nom}</p>
+                            <p><strong>Date :</strong> ${new Date().toLocaleDateString('fr-FR')}</p>
+                        </div>
+                        
+                        <h4 style="color: var(--couleur-principale); margin-bottom: 15px;">Liste des élèves</h4>
+                        <div class="table-content" style="max-height: 400px; overflow-y: auto;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Élève</th>
+                                        <th>Présent</th>
+                                        <th>Absent</th>
+                                        <th>Retard</th>
+                                        <th>Commentaire</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${elevesClasse.map(eleve => {
+                                        const absenceDuJour = SCOLARIS_DATA.absences.find(a => 
+                                            a.eleve_id === eleve.id && a.date === new Date().toISOString().split('T')[0]
+                                        );
+                                        
+                                        return `
+                                            <tr>
+                                                <td>${eleve.nom} ${eleve.prenom}</td>
+                                                <td style="text-align: center;">
+                                                    <input type="radio" name="presence_${eleve.id}" value="present" 
+                                                           ${!absenceDuJour ? 'checked' : ''}>
+                                                </td>
+                                                <td style="text-align: center;">
+                                                    <input type="radio" name="presence_${eleve.id}" value="absent"
+                                                           ${absenceDuJour ? 'checked' : ''}>
+                                                </td>
+                                                <td style="text-align: center;">
+                                                    <input type="radio" name="presence_${eleve.id}" value="retard">
+                                                </td>
+                                                <td>
+                                                    <input type="text" class="form-control" style="width: 100%; padding: 5px;" 
+                                                           placeholder="Motif..." value="${absenceDuJour ? absenceDuJour.motif : ''}">
+                                                </td>
+                                            </tr>
+                                        `;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div style="margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 6px;">
+                            <p><strong><i class="fas fa-info-circle"></i> Information :</strong></p>
+                            <p style="font-size: 0.9rem; margin-top: 5px;">
+                                Les absences marquées ici seront automatiquement enregistrées dans le système.
+                                Les parents seront notifiés des absences non justifiées.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="fermerModal()">Annuler</button>
+                        <button class="btn btn-primary" onclick="enregistrerPresences('${classeId}', '${matiereId}')">
+                            <i class="fas fa-save"></i> Enregistrer la présence
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            ouvrirModal(modalHtml);
+        }
+        
+        function enregistrerPresences(classeId, matiereId) {
+            const elevesClasse = SCOLARIS_DATA.eleves.filter(e => e.classe_id === classeId);
+            const dateAujourdhui = new Date().toISOString().split('T')[0];
+            
+            elevesClasse.forEach(eleve => {
+                const statut = document.querySelector(`input[name="presence_${eleve.id}"]:checked`).value;
+                const commentaire = document.querySelector(`input[name="presence_${eleve.id}"]`).parentElement.parentElement.querySelector('input[type="text"]').value;
+                
+                if (statut === 'absent') {
+                    // Vérifier si une absence existe déjà pour aujourd'hui
+                    const absenceExistante = SCOLARIS_DATA.absences.find(a => 
+                        a.eleve_id === eleve.id && a.date === dateAujourdhui
+                    );
+                    
+                    if (!absenceExistante) {
+                        const nouvelleAbsence = {
+                            id: Date.now() + Math.random(),
+                            eleve_id: eleve.id,
+                            date: dateAujourdhui,
+                            periode: 'journee',
+                            justifiee: false,
+                            motif: commentaire || 'Absence non justifiée',
+                            date_justification: null,
+                            matiere_id: parseInt(matiereId),
+                            enseignant_id: user.id
+                        };
+                        
+                        SCOLARIS_DATA.absences.push(nouvelleAbsence);
+                    }
+                } else if (statut === 'retard') {
+                    const nouveauRetard = {
+                        id: Date.now() + Math.random(),
+                        eleve_id: eleve.id,
+                        date: dateAujourdhui,
+                        heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+                        duree: 10,
+                        motif: commentaire || 'Retard',
+                        justifie: false,
+                        matiere_id: parseInt(matiereId)
+                    };
+                    
+                    SCOLARIS_DATA.retards.push(nouveauRetard);
+                }
+            });
+            
+            sauvegarderDonnees();
+            alert('Présence enregistrée avec succès !');
+            fermerModal();
+        }
+        
+        function ouvrirModalAjoutDevoir() {
+            const modalHtml = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">📝 Ajouter un devoir</div>
+                        <button class="modal-close" onclick="fermerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formAjoutDevoir">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Matière *</label>
+                                    <select class="form-control" id="matiereDevoir" required>
+                                        <option value="">Sélectionner</option>
+                                        ${SCOLARIS_DATA.matieres.map(matiere => `
+                                            <option value="${matiere.id}">${matiere.nom}</option>
+                                        `).join('')}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Classe *</label>
+                                    <select class="form-control" id="classeDevoir" required>
+                                        <option value="">Sélectionner</option>
+                                        ${(user.classes || SCOLARIS_DATA.classes.map(c => c.id)).map(classeId => {
+                                            const classe = SCOLARIS_DATA.classes.find(c => c.id === classeId);
+                                            return classe ? `<option value="${classe.id}">${classe.nom}</option>` : '';
+                                        }).join('')}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Pour le *</label>
+                                    <input type="date" class="form-control" id="dateDevoir" required 
+                                           value="${new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}">
+                                </div>
+                                <div class="form-group">
+                                    <label>Type de travail</label>
+                                    <select class="form-control" id="typeDevoir">
+                                        <option value="Exercices">Exercices</option>
+                                        <option value="Apprentissage">Apprentissage</option>
+                                        <option value="Rédaction">Rédaction</option>
+                                        <option value="Projet">Projet</option>
+                                        <option value="Recherche">Recherche</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Description du travail *</label>
+                                    <textarea class="form-control" id="descriptionDevoir" rows="4" required 
+                                              placeholder="Décrivez précisément le travail à faire..."></textarea>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Documents joints (simulation)</label>
+                                    <div style="border: 2px dashed #ddd; padding: 20px; text-align: center; border-radius: 6px;">
+                                        <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: #666; margin-bottom: 10px;"></i>
+                                        <p style="color: #666; font-size: 0.9rem;">Déposez des fichiers ici (PDF, images, etc.)</p>
+                                        <button type="button" class="btn btn-secondary btn-small" style="margin-top: 10px;">
+                                            <i class="fas fa-folder-open"></i> Parcourir
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="fermerModal()">Annuler</button>
+                        <button class="btn btn-primary" onclick="ajouterDevoir()">
+                            <i class="fas fa-paper-plane"></i> Publier le devoir
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            ouvrirModal(modalHtml);
+        }
+        
+        function ouvrirModalAjoutDevoirCours(matiereId, classeId) {
+            document.getElementById('matiereDevoir').value = matiereId;
+            document.getElementById('classeDevoir').value = classeId;
+            ouvrirModalAjoutDevoir();
+        }
+        
+        function ajouterDevoir() {
+            const matiereId = parseInt(document.getElementById('matiereDevoir').value);
+            const classeId = document.getElementById('classeDevoir').value;
+            const datePour = document.getElementById('dateDevoir').value;
+            const type = document.getElementById('typeDevoir').value;
+            const description = document.getElementById('descriptionDevoir').value;
+            
+            if (!matiereId || !classeId || !datePour || !description) {
+                alert('Veuillez remplir tous les champs obligatoires (*)');
+                return;
+            }
+            
+            const nouveauDevoir = {
+                id: Date.now(),
+                matiere_id: matiereId,
+                classe_id: classeId,
+                date_creation: new Date().toISOString().split('T')[0],
+                date_pour: datePour,
+                type: type,
+                description: description,
+                enseignant_id: user.id,
+                statut: 'actif'
+            };
+            
+            SCOLARIS_DATA.devoirs.push(nouveauDevoir);
+            sauvegarderDonnees();
+            
+            alert('Devoir ajouté avec succès !');
+            fermerModal();
+            afficherEmploiDuTemps();
+        }
+        
+        function modifierDevoir(devoirId) {
+            const devoir = SCOLARIS_DATA.devoirs.find(d => d.id === devoirId);
+            
+            const modalHtml = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">✏️ Modifier le devoir</div>
+                        <button class="modal-close" onclick="fermerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formModifierDevoir">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Description du travail *</label>
+                                    <textarea class="form-control" id="descriptionDevoirModif" rows="4" required>${devoir.description}</textarea>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Pour le *</label>
+                                    <input type="date" class="form-control" id="dateDevoirModif" value="${devoir.date_pour}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Type de travail</label>
+                                    <select class="form-control" id="typeDevoirModif">
+                                        <option value="Exercices" ${devoir.type === 'Exercices' ? 'selected' : ''}>Exercices</option>
+                                        <option value="Apprentissage" ${devoir.type === 'Apprentissage' ? 'selected' : ''}>Apprentissage</option>
+                                        <option value="Rédaction" ${devoir.type === 'Rédaction' ? 'selected' : ''}>Rédaction</option>
+                                        <option value="Projet" ${devoir.type === 'Projet' ? 'selected' : ''}>Projet</option>
+                                        <option value="Recherche" ${devoir.type === 'Recherche' ? 'selected' : ''}>Recherche</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="fermerModal()">Annuler</button>
+                        <button class="btn btn-primary" onclick="sauvegarderModificationDevoir(${devoirId})">
+                            <i class="fas fa-save"></i> Enregistrer
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            ouvrirModal(modalHtml);
+        }
+        
+        function sauvegarderModificationDevoir(devoirId) {
+            const devoirIndex = SCOLARIS_DATA.devoirs.findIndex(d => d.id === devoirId);
+            
+            if (devoirIndex === -1) return;
+            
+            SCOLARIS_DATA.devoirs[devoirIndex].description = document.getElementById('descriptionDevoirModif').value;
+            SCOLARIS_DATA.devoirs[devoirIndex].date_pour = document.getElementById('dateDevoirModif').value;
+            SCOLARIS_DATA.devoirs[devoirIndex].type = document.getElementById('typeDevoirModif').value;
+            
+            sauvegarderDonnees();
+            alert('Devoir modifié avec succès !');
+            fermerModal();
+            afficherEmploiDuTemps();
+        }
+        
+        function supprimerDevoir(devoirId) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer ce devoir ?')) {
+                return;
+            }
+            
+            SCOLARIS_DATA.devoirs = SCOLARIS_DATA.devoirs.filter(d => d.id !== devoirId);
+            sauvegarderDonnees();
+            alert('Devoir supprimé !');
+            afficherEmploiDuTemps();
+        }
+        
+        function voirDetailsCours(matiereId, classeId, horaire, jour) {
+            const matiere = SCOLARIS_DATA.matieres.find(m => m.id === parseInt(matiereId));
+            const classe = SCOLARIS_DATA.classes.find(c => c.id === classeId);
+            
+            const jours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'];
+            const horaires = ['8h-9h', '9h-10h', '10h-11h', '11h-12h', '13h30-14h30', '14h30-15h30', '15h30-16h30'];
+            
+            const modalHtml = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">📚 Détails du cours</div>
+                        <button class="modal-close" onclick="fermerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div style="display: flex; gap: 30px; margin-bottom: 25px;">
+                            <div>
+                                <h4 style="color: var(--couleur-principale); margin-bottom: 10px;">Cours</h4>
+                                <p><strong>Matière :</strong> ${matiere.nom}</p>
+                                <p><strong>Classe :</strong> ${classe.nom}</p>
+                                <p><strong>Jour :</strong> ${jours[jour]}</p>
+                                <p><strong>Horaire :</strong> ${horaires[horaire]}</p>
+                                <p><strong>Salle :</strong> ${classe.salle}</p>
+                            </div>
+                            <div>
+                                <h4 style="color: var(--couleur-principale); margin-bottom: 10px;">Informations</h4>
+                                <p><strong>Effectif :</strong> ${SCOLARIS_DATA.eleves.filter(e => e.classe_id === classeId).length} élèves</p>
+                                <p><strong>Professeur :</strong> ${user.role === 'enseignant' ? user.prenom + ' ' + user.nom : 'M. Enseignant'}</p>
+                                <p><strong>Coefficient :</strong> ${matiere.coefficient}</p>
+                            </div>
+                        </div>
+                        
+                        <h4 style="color: var(--couleur-principale); margin-bottom: 15px;">Devoirs pour ce cours</h4>
+                        <div class="table-content" style="max-height: 200px; overflow-y: auto; margin-bottom: 20px;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Pour le</th>
+                                        <th>Description</th>
+                                        <th>Statut</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${SCOLARIS_DATA.devoirs
+                                        .filter(d => d.matiere_id === parseInt(matiereId) && d.classe_id === classeId)
+                                        .map(devoir => `
+                                            <tr>
+                                                <td>${formatDate(devoir.date_pour)}</td>
+                                                <td>${devoir.description.substring(0, 50)}...</td>
+                                                <td><span class="badge badge-success">Actif</span></td>
+                                            </tr>
+                                        `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        ${SCOLARIS_DATA.devoirs.filter(d => d.matiere_id === parseInt(matiereId) && d.classe_id === classeId).length === 0 ? 
+                            '<p style="color: #666; text-align: center; padding: 20px;">Aucun devoir pour le moment</p>' : ''}
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="fermerModal()">Fermer</button>
+                        ${user.role === 'enseignant' ? `
+                        <button class="btn btn-primary" onclick="ouvrirModalPresence('${classeId}', '${matiereId}')">
+                            <i class="fas fa-user-check"></i> Prendre la présence
+                        </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            
+            ouvrirModal(modalHtml);
+        }
+        
+        // ============================================
+        // GESTION DES ÉLÈVES (COMPLÈTE)
+        // ============================================
+        
+        function afficherGestionEleves() {
+            const html = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h1 style="color: var(--couleur-principale);">Gestion des élèves</h1>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-primary" onclick="ouvrirModalNouvelEleve()">
+                            <i class="fas fa-user-plus"></i> Nouvel élève
+                        </button>
+                        <button class="btn btn-secondary" onclick="exporterListeEleves()">
+                            <i class="fas fa-file-export"></i> Exporter
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="tabs">
+                    <div class="tab active" onclick="changerTabEleves('liste')">Liste des élèves</div>
+                    <div class="tab" onclick="changerTabEleves('inscription')">Inscriptions</div>
+                    <div class="tab" onclick="changerTabEleves('sortants')">Élèves sortants</div>
+                </div>
+                
+                <div id="tabContenuEleves">
+                    <!-- Contenu des onglets -->
+                </div>
+            `;
+            
+            document.getElementById('contenuPrincipal').innerHTML = html;
+            setActiveMenu('eleves');
+            afficherListeEleves();
+        }
+        
+        function afficherListeEleves() {
+            let html = `
+                <div class="form-row" style="margin-bottom: 20px;">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Rechercher un élève..." 
+                               onkeyup="filtrerEleves(this.value)">
+                    </div>
+                    <div class="form-group" style="width: 200px;">
+                        <select class="form-control" onchange="filtrerParClasse(this.value)">
+                            <option value="">Toutes les classes</option>
+                            ${SCOLARIS_DATA.classes.map(classe => `
+                                <option value="${classe.id}">${classe.nom}</option>
+                            `).join('')}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <div class="table-header">
+                        <div class="table-title">Élèves inscrits (${SCOLARIS_DATA.eleves.length})</div>
+                    </div>
+                    <div class="table-content">
+                        <table id="tableEleves">
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Prénom</th>
+                                    <th>Classe</th>
+                                    <th>Date de naissance</th>
+                                    <th>Responsable</th>
+                                    <th>Téléphone</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${SCOLARIS_DATA.eleves.map(eleve => {
+                                    const classe = SCOLARIS_DATA.classes.find(c => c.id === eleve.classe_id);
+                                    return `
+                                        <tr data-eleve-id="${eleve.id}">
+                                            <td><strong>${eleve.nom}</strong></td>
+                                            <td>${eleve.prenom}</td>
+                                            <td>${classe ? classe.nom : 'Non affecté'}</td>
+                                            <td>${formatDate(eleve.date_naissance)}</td>
+                                            <td>${eleve.responsable_1}</td>
+                                            <td>${eleve.tel_responsable_1}</td>
+                                            <td>
+                                                <div style="display: flex; gap: 5px;">
+                                                    <button class="btn btn-secondary btn-small" onclick="voirFicheEleve(${eleve.id})">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    <button class="btn btn-secondary btn-small" onclick="modifierEleve(${eleve.id})">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button class="btn btn-danger btn-small" onclick="supprimerEleve(${eleve.id})">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('tabContenuEleves').innerHTML = html;
+        }
+        
+        function ouvrirModalNouvelEleve() {
+            const modalHtml = `
+                <div class="modal-content" style="max-width: 800px;">
+                    <div class="modal-header">
+                        <div class="modal-title">👤 Inscrire un nouvel élève</div>
+                        <button class="modal-close" onclick="fermerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formNouvelEleve">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Nom *</label>
+                                    <input type="text" class="form-control" id="nomEleve" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Prénom *</label>
+                                    <input type="text" class="form-control" id="prenomEleve" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Date de naissance *</label>
+                                    <input type="date" class="form-control" id="naissanceEleve" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Classe *</label>
+                                    <select class="form-control" id="classeEleve" required>
+                                        <option value="">Sélectionner</option>
+                                        ${SCOLARIS_DATA.classes.map(classe => `
+                                            <option value="${classe.id}">${classe.nom}</option>
+                                        `).join('')}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <h4 style="color: var(--couleur-principale); margin: 25px 0 15px 0;">Responsable légal</h4>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Nom du responsable *</label>
+                                    <input type="text" class="form-control" id="responsableEleve" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Téléphone *</label>
+                                    <input type="tel" class="form-control" id="telResponsableEleve" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Email</label>
+                                    <input type="email" class="form-control" id="emailResponsableEleve">
+                                </div>
+                                <div class="form-group">
+                                    <label>Lien de parenté</label>
+                                    <select class="form-control" id="parenteResponsableEleve">
+                                        <option value="Mère">Mère</option>
+                                        <option value="Père">Père</option>
+                                        <option value="Tuteur">Tuteur</option>
+                                        <option value="Autre">Autre</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <h4 style="color: var(--couleur-principale); margin: 25px 0 15px 0;">Informations complémentaires</h4>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Adresse</label>
+                                    <input type="text" class="form-control" id="adresseEleve" placeholder="Numéro et rue">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Code postal</label>
+                                    <input type="text" class="form-control" id="cpEleve">
+                                </div>
+                                <div class="form-group">
+                                    <label>Ville</label>
+                                    <input type="text" class="form-control" id="villeEleve">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="fermerModal()">Annuler</button>
+                        <button class="btn btn-primary" onclick="creerNouvelEleve()">
+                            <i class="fas fa-save"></i> Inscrire l'élève
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            ouvrirModal(modalHtml);
+        }
+        
+        function creerNouvelEleve() {
+            const nom = document.getElementById('nomEleve').value;
+            const prenom = document.getElementById('prenomEleve').value;
+            const naissance = document.getElementById('naissanceEleve').value;
+            const classeId = document.getElementById('classeEleve').value;
+            const responsable = document.getElementById('responsableEleve').value;
+            const telephone = document.getElementById('telResponsableEleve').value;
+            
+            if (!nom || !prenom || !naissance || !classeId || !responsable || !telephone) {
+                alert('Veuillez remplir tous les champs obligatoires (*)');
+                return;
+            }
+            
+            const nouvelleId = Math.max(...SCOLARIS_DATA.eleves.map(e => e.id), 0) + 1;
+            const classe = SCOLARIS_DATA.classes.find(c => c.id === classeId);
+            
+            const nouvelEleve = {
+                id: nouvelleId,
+                nom: nom,
+                prenom: prenom,
+                classe: classe.nom,
+                classe_id: classeId,
+                date_naissance: naissance,
+                responsable_1: responsable,
+                tel_responsable_1: telephone,
+                email_responsable_1: document.getElementById('emailResponsableEleve').value,
+                parente_responsable_1: document.getElementById('parenteResponsableEleve').value,
+                adresse: document.getElementById('adresseEleve').value,
+                code_postal: document.getElementById('cpEleve').value,
+                ville: document.getElementById('villeEleve').value,
+                date_inscription: new Date().toISOString().split('T')[0]
+            };
+            
+            SCOLARIS_DATA.eleves.push(nouvelEleve);
+            sauvegarderDonnees();
+            
+            // Créer un compte élève automatiquement
+            const nouvelUtilisateur = {
+                id: Math.max(...SCOLARIS_DATA.utilisateurs.map(u => u.id), 0) + 1,
+                nom: nom,
+                prenom: prenom,
+                role: 'eleve',
+                identifiant: `${prenom.toLowerCase()}.${nom.toLowerCase().substring(0, 3)}`,
+                password: 'eleve123',
+                email: `${prenom.toLowerCase()}.${nom.toLowerCase()}@edu.college-victor-hugo.fr`,
+                date_creation: new Date().toISOString().split('T')[0],
+                actif: true,
+                eleve_id: nouvelleId
+            };
+            
+            SCOLARIS_DATA.utilisateurs.push(nouvelUtilisateur);
+            sauvegarderDonnees();
+            
+            alert(`Élève inscrit avec succès !\n\nIdentifiant généré : ${nouvelUtilisateur.identifiant}\nMot de passe : eleve123`);
+            fermerModal();
+            afficherGestionEleves();
+        }
+        
+        function voirFicheEleve(eleveId) {
+            const eleve = SCOLARIS_DATA.eleves.find(e => e.id === eleveId);
+            const classe = SCOLARIS_DATA.classes.find(c => c.id === eleve.classe_id);
+            const notesEleve = SCOLARIS_DATA.notes.filter(n => n.eleve_id === eleveId);
+            const absencesEleve = SCOLARIS_DATA.absences.filter(a => a.eleve_id === eleveId);
+            
+            const modalHtml = `
+                <div class="modal-content" style="max-width: 900px;">
+                    <div class="modal-header">
+                        <div class="modal-title">📄 Fiche élève : ${eleve.nom} ${eleve.prenom}</div>
+                        <button class="modal-close" onclick="fermerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="tabs">
+                            <div class="tab active" onclick="changerTabFicheEleve('infos', ${eleveId})">Informations</div>
+                            <div class="tab" onclick="changerTabFicheEleve('scolarite', ${eleveId})">Scolarité</div>
+                            <div class="tab" onclick="changerTabFicheEleve('absences', ${eleveId})">Absences</div>
+                            <div class="tab" onclick="changerTabFicheEleve('documents', ${eleveId})">Documents</div>
+                        </div>
+                        
+                        <div id="contenuFicheEleve">
+                            <!-- Contenu des onglets -->
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="fermerModal()">Fermer</button>
+                        <button class="btn btn-primary" onclick="genererFicheElevePDF(${eleveId})">
+                            <i class="fas fa-print"></i> Imprimer la fiche
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            ouvrirModal(modalHtml);
+            afficherInfosEleve(eleveId);
+        }
+        
+        function afficherInfosEleve(eleveId) {
+            const eleve = SCOLARIS_DATA.eleves.find(e => e.id === eleveId);
+            const classe = SCOLARIS_DATA.classes.find(c => c.id === eleve.classe_id);
+            
+            const html = `
+                <div style="margin-top: 20px;">
+                    <div style="display: flex; gap: 30px; margin-bottom: 30px;">
+                        <div style="flex: 1;">
+                            <h4 style="color: var(--couleur-principale); margin-bottom: 15px;">Identité</h4>
+                            <p><strong>Nom :</strong> ${eleve.nom}</p>
+                            <p><strong>Prénom :</strong> ${eleve.prenom}</p>
+                            <p><strong>Date de naissance :</strong> ${formatDate(eleve.date_naissance)}</p>
+                            <p><strong>Classe :</strong> ${classe ? classe.nom : 'Non affecté'}</p>
+                            <p><strong>Date d'inscription :</strong> ${formatDate(eleve.date_inscription)}</p>
+                        </div>
+                        <div style="flex: 1;">
+                            <h4 style="color: var(--couleur-principale); margin-bottom: 15px;">Responsable légal</h4>
+                            <p><strong>Nom :</strong> ${eleve.responsable_1}</p>
+                            <p><strong>Téléphone :</strong> ${eleve.tel_responsable_1}</p>
+                            <p><strong>Email :</strong> ${eleve.email_responsable_1 || 'Non renseigné'}</p>
+                            <p><strong>Adresse :</strong> ${eleve.adresse || 'Non renseignée'}</p>
+                            <p><strong>Ville :</strong> ${eleve.ville || ''} ${eleve.code_postal || ''}</p>
+                        </div>
+                    </div>
+                    
+                    <div style="background-color: #f8f9fa; padding: 15px; border-radius: 6px;">
+                        <h4 style="color: var(--couleur-principale); margin-bottom: 10px;">Statistiques</h4>
+                        <div style="display: flex; gap: 30px;">
+                            <div>
+                                <p><strong>Moyenne générale :</strong> 14.2/20</p>
+                                <p><strong>Rang dans la classe :</strong> 8ème/${classe ? classe.effectif : '?'}</p>
+                            </div>
+                            <div>
+                                <p><strong>Absences cette année :</strong> ${SCOLARIS_DATA.absences.filter(a => a.eleve_id === eleveId).length}</p>
+                                <p><strong>Retards cette année :</strong> ${SCOLARIS_DATA.retards.filter(r => r.eleve_id === eleveId).length}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('contenuFicheEleve').innerHTML = html;
+        }
+        
+        // ============================================
+        // GESTION DES NOTES (COMPLÈTE)
+        // ============================================
+        
+        function afficherGestionNotes() {
+            const html = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h1 style="color: var(--couleur-principale);">Gestion des notes</h1>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-primary" onclick="ouvrirModalSaisieNotes()">
+                            <i class="fas fa-plus"></i> Saisir des notes
+                        </button>
+                        <button class="btn btn-secondary" onclick="genererBulletins()">
+                            <i class="fas fa-print"></i> Générer les bulletins
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="tabs">
+                    <div class="tab active" onclick="changerTabNotes('saisie')">Saisie</div>
+                    <div class="tab" onclick="changerTabNotes('releves')">Relevés</div>
+                    <div class="tab" onclick="changerTabNotes('bulletins')">Bulletins</div>
+                    <div class="tab" onclick="changerTabNotes('statistiques')">Statistiques</div>
+                </div>
+                
+                <div id="tabContenuNotes">
+                    <!-- Contenu des onglets -->
+                </div>
+            `;
+            
+            document.getElementById('contenuPrincipal').innerHTML = html;
+            setActiveMenu('notes');
+            afficherSaisieNotes();
+        }
+        
+        function afficherSaisieNotes() {
+            const html = `
+                <div class="form-container">
+                    <h3 class="form-title">Saisie des notes</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Classe</label>
+                            <select class="form-control" id="classeSaisieNotes" onchange="chargerElevesPourNotes()">
+                                <option value="">Sélectionner une classe</option>
+                                ${SCOLARIS_DATA.classes.map(classe => `
+                                    <option value="${classe.id}">${classe.nom}</option>
+                                `).join('')}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Matière</label>
+                            <select class="form-control" id="matiereSaisieNotes">
+                                ${SCOLARIS_DATA.matieres.map(matiere => `
+                                    <option value="${matiere.id}">${matiere.nom}</option>
+                                `).join('')}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Type d'évaluation</label>
+                            <select class="form-control" id="typeEvaluationNotes">
+                                <option value="Devoir surveillé">Devoir surveillé</option>
+                                <option value="Contrôle">Contrôle</option>
+                                <option value="Interrogation écrite">Interrogation écrite</option>
+                                <option value="Oral">Oral</option>
+                                <option value="Projet">Projet</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="date" class="form-control" id="dateEvaluationNotes" 
+                                   value="${new Date().toISOString().split('T')[0]}">
+                        </div>
+                        <div class="form-group">
+                            <label>Coefficient</label>
+                            <input type="number" class="form-control" id="coeffEvaluationNotes" value="1" min="0.5" max="5" step="0.5">
+                        </div>
+                    </div>
+                    
+                    <div id="listeElevesNotes" style="margin-top: 20px;">
+                        <!-- Généré dynamiquement -->
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('tabContenuNotes').innerHTML = html;
+        }
+        
+        function chargerElevesPourNotes() {
+            const classeId = document.getElementById('classeSaisieNotes').value;
+            const elevesClasse = SCOLARIS_DATA.eleves.filter(e => e.classe_id === classeId);
+            
+            if (elevesClasse.length === 0) {
+                document.getElementById('listeElevesNotes').innerHTML = `
+                    <div style="text-align: center; padding: 30px; color: #666;">
+                        <i class="fas fa-users" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;"></i>
+                        <p>Aucun élève dans cette classe</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = `
+                <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                    <h4 style="color: var(--couleur-principale);">Saisie des notes pour ${elevesClasse.length} élèves</h4>
+                    <div>
+                        <button class="btn btn-secondary btn-small" onclick="remplirNotesAleatoires()">
+                            <i class="fas fa-random"></i> Notes aléatoires
+                        </button>
+                        <button class="btn btn-secondary btn-small" onclick="effacerToutesNotes()">
+                            <i class="fas fa-eraser"></i> Effacer tout
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="table-content">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Élève</th>
+                                <th style="width: 120px;">Note /20</th>
+                                <th style="width: 200px;">Appréciation</th>
+                                <th style="width: 100px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${elevesClasse.map(eleve => `
+                                <tr>
+                                    <td><strong>${eleve.nom} ${eleve.prenom}</strong></td>
+                                    <td>
+                                        <input type="number" class="form-control note-input" 
+                                               data-eleve-id="${eleve.id}" min="0" max="20" step="0.5" 
+                                               placeholder="0 à 20" style="text-align: center;">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control apprec-input" 
+                                               data-eleve-id="${eleve.id}" placeholder="Commentaire">
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-secondary btn-small" onclick="appliquerNoteParDefaut(${eleve.id}, 15)">
+                                            15/20
+                                        </button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div style="margin-top: 20px; text-align: right;">
+                    <button class="btn btn-primary" onclick="enregistrerNotes()">
+                        <i class="fas fa-save"></i> Enregistrer toutes les notes
+                    </button>
+                </div>
+            `;
+            
+            document.getElementById('listeElevesNotes').innerHTML = html;
+        }
+        
+        function remplirNotesAleatoires() {
+            const inputs = document.querySelectorAll('.note-input');
+            inputs.forEach(input => {
+                const note = (Math.random() * 8 + 8).toFixed(1); // Note entre 8 et 16
+                input.value = parseFloat(note);
+                
+                const eleveId = input.dataset.eleveId;
+                const apprecInput = document.querySelector(`.apprec-input[data-eleve-id="${eleveId}"]`);
+                
+                const apprecs = [
+                    "Bon travail",
+                    "Satisfaisant",
+                    "Peut mieux faire",
+                    "Excellent",
+                    "À revoir",
+                    "Très bien"
+                ];
+                apprecInput.value = apprecs[Math.floor(Math.random() * apprecs.length)];
+            });
+            
+            alert('Notes aléatoires générées !');
+        }
+        
+        function effacerToutesNotes() {
+            const inputs = document.querySelectorAll('.note-input, .apprec-input');
+            inputs.forEach(input => input.value = '');
+        }
+        
+        function appliquerNoteParDefaut(eleveId, note) {
+            const noteInput = document.querySelector(`.note-input[data-eleve-id="${eleveId}"]`);
+            const apprecInput = document.querySelector(`.apprec-input[data-eleve-id="${eleveId}"]`);
+            
+            if (noteInput) noteInput.value = note;
+            if (apprecInput) apprecInput.value = "Note par défaut appliquée";
+        }
+        
+        function enregistrerNotes() {
+            const classeId = document.getElementById('classeSaisieNotes').value;
+            const matiereId = parseInt(document.getElementById('matiereSaisieNotes').value);
+            const type = document.getElementById('typeEvaluationNotes').value;
+            const date = document.getElementById('dateEvaluationNotes').value;
+            const coefficient = parseFloat(document.getElementById('coeffEvaluationNotes').value);
+            
+            if (!classeId || !matiereId) {
+                alert('Veuillez sélectionner une classe et une matière');
+                return;
+            }
+            
+            const noteInputs = document.querySelectorAll('.note-input');
+            let notesEnregistrees = 0;
+            
+            noteInputs.forEach(input => {
+                const noteValue = parseFloat(input.value);
+                if (!isNaN(noteValue) && noteValue >= 0 && noteValue <= 20) {
+                    const eleveId = parseInt(input.dataset.eleveId);
+                    const apprecInput = document.querySelector(`.apprec-input[data-eleve-id="${eleveId}"]`);
+                    const commentaire = apprecInput ? apprecInput.value : '';
+                    
+                    const nouvelleNote = {
+                        id: Date.now() + Math.random(),
+                        eleve_id: eleveId,
+                        matiere_id: matiereId,
+                        note: noteValue,
+                        coefficient: coefficient,
+                        type: type,
+                        date: date,
+                        commentaire: commentaire,
+                        trimestre: 1,
+                        enseignant_id: user.id
+                    };
+                    
+                    SCOLARIS_DATA.notes.push(nouvelleNote);
+                    notesEnregistrees++;
+                }
+            });
+            
+            sauvegarderDonnees();
+            alert(`${notesEnregistrees} notes enregistrées avec succès !`);
+        }
+        
+        // ============================================
+        // GESTION DES ABSENCES (COMPLÈTE)
+        // ============================================
+        
+        function afficherGestionAbsences() {
+            const html = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h1 style="color: var(--couleur-principale);">Gestion des absences et retards</h1>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-primary" onclick="ouvrirModalNouvelleAbsence()">
+                            <i class="fas fa-user-times"></i> Nouvelle absence
+                        </button>
+                        <button class="btn btn-primary" onclick="ouvrirModalNouveauRetard()">
+                            <i class="fas fa-clock"></i> Nouveau retard
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="tabs">
+                    <div class="tab active" onclick="changerTabAbsences('absences')">Absences</div>
+                    <div class="tab" onclick="changerTabAbsences('retards')">Retards</div>
+                    <div class="tab" onclick="changerTabAbsences('retenues')">Heures de retenue</div>
+                    <div class="tab" onclick="changerTabAbsences('statistiques')">Statistiques</div>
+                </div>
+                
+                <div id="tabContenuAbsences">
+                    <!-- Contenu des onglets -->
+                </div>
+            `;
+            
+            document.getElementById('contenuPrincipal').innerHTML = html;
+            setActiveMenu('absences');
+            afficherListeAbsences();
+        }
+        
+        function afficherListeAbsences() {
+            const html = `
+                <div class="form-row" style="margin-bottom: 20px;">
+                    <div class="form-group">
+                        <input type="date" class="form-control" id="dateFiltreAbsences" 
+                               value="${new Date().toISOString().split('T')[0]}"
+                               onchange="filtrerAbsencesParDate(this.value)">
+                    </div>
+                    <div class="form-group">
+                        <select class="form-control" onchange="filtrerAbsencesParClasse(this.value)">
+                            <option value="">Toutes les classes</option>
+                            ${SCOLARIS_DATA.classes.map(classe => `
+                                <option value="${classe.id}">${classe.nom}</option>
+                            `).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <select class="form-control" onchange="filtrerAbsencesParJustification(this.value)">
+                            <option value="">Tous les statuts</option>
+                            <option value="justifie">Justifiées</option>
+                            <option value="non-justifie">Non justifiées</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <div class="table-header">
+                        <div class="table-title">Absences récentes (${SCOLARIS_DATA.absences.length})</div>
+                        <button class="btn btn-secondary btn-small" onclick="exporterAbsences()">
+                            <i class="fas fa-file-export"></i> Exporter
+                        </button>
+                    </div>
+                    <div class="table-content">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Élève</th>
+                                    <th>Classe</th>
+                                    <th>Période</th>
+                                    <th>Motif</th>
+                                    <th>Justifiée</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${SCOLARIS_DATA.absences.slice(-20).map(absence => {
+                                    const eleve = SCOLARIS_DATA.eleves.find(e => e.id === absence.eleve_id);
+                                    const classe = eleve ? SCOLARIS_DATA.classes.find(c => c.id === eleve.classe_id) : null;
+                                    
+                                    return `
+                                        <tr>
+                                            <td>${formatDate(absence.date)}</td>
+                                            <td>${eleve ? eleve.nom + ' ' + eleve.prenom : 'Inconnu'}</td>
+                                            <td>${classe ? classe.nom : ''}</td>
+                                            <td>${absence.periode === 'matin' ? 'Matin' : absence.periode === 'aprem' ? 'Après-midi' : 'Journée'}</td>
+                                            <td>${absence.motif}</td>
+                                            <td>
+                                                ${absence.justifiee ? 
+                                                    '<span class="badge badge-success">Oui</span>' : 
+                                                    '<span class="badge badge-danger">Non</span>'}
+                                            </td>
+                                            <td>
+                                                <div style="display: flex; gap: 5px;">
+                                                    <button class="btn btn-secondary btn-small" onclick="justifierAbsence(${absence.id})">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                    <button class="btn btn-danger btn-small" onclick="supprimerAbsence(${absence.id})">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="cards-container" style="margin-top: 30px;">
+                    <div class="card">
+                        <div class="card-title">Absences aujourd'hui</div>
+                        <div class="card-value">
+                            ${SCOLARIS_DATA.absences.filter(a => a.date === new Date().toISOString().split('T')[0]).length}
+                        </div>
+                        <div class="card-subtitle">Élèves absents</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Taux d'absentéisme</div>
+                        <div class="card-value">3.2%</div>
+                        <div class="card-subtitle">Moyenne cette semaine</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Absences non justifiées</div>
+                        <div class="card-value">
+                            ${SCOLARIS_DATA.absences.filter(a => !a.justifiee).length}
+                        </div>
+                        <div class="card-subtitle">À régulariser</div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('tabContenuAbsences').innerHTML = html;
+        }
+        
+        function ouvrirModalNouvelleAbsence() {
+            const modalHtml = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">📝 Déclarer une absence</div>
+                        <button class="modal-close" onclick="fermerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formNouvelleAbsence">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Élève *</label>
+                                    <select class="form-control" id="eleveAbsence" required>
+                                        <option value="">Sélectionner un élève</option>
+                                        ${SCOLARIS_DATA.eleves.map(eleve => {
+                                            const classe = SCOLARIS_DATA.classes.find(c => c.id === eleve.classe_id);
+                                            return `<option value="${eleve.id}">${eleve.nom} ${eleve.prenom} - ${classe ? classe.nom : ''}</option>`;
+                                        }).join('')}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Date *</label>
+                                    <input type="date" class="form-control" id="dateAbsence" 
+                                           value="${new Date().toISOString().split('T')[0]}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Période *</label>
+                                    <select class="form-control" id="periodeAbsence" required>
+                                        <option value="matin">Matin</option>
+                                        <option value="aprem">Après-midi</option>
+                                        <option value="journee">Journée entière</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Motif *</label>
+                                    <select class="form-control" id="motifAbsence" required>
+                                        <option value="">Sélectionner un motif</option>
+                                        <option value="Maladie">Maladie</option>
+                                        <option value="Raison familiale">Raison familiale</option>
+                                        <option value="Visite médicale">Visite médicale</option>
+                                        <option value="Absence injustifiée">Absence injustifiée</option>
+                                        <option value="Autre">Autre</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Justifiée</label>
+                                    <select class="form-control" id="justifieeAbsence">
+                                        <option value="true">Oui</option>
+                                        <option value="false" selected>Non</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Commentaire</label>
+                                    <textarea class="form-control" id="commentaireAbsence" rows="3" 
+                                              placeholder="Informations complémentaires..."></textarea>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="fermerModal()">Annuler</button>
+                        <button class="btn btn-primary" onclick="declarerAbsence()">
+                            <i class="fas fa-save"></i> Déclarer l'absence
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            ouvrirModal(modalHtml);
+        }
+        
+        function declarerAbsence() {
+            const eleveId = parseInt(document.getElementById('eleveAbsence').value);
+            const date = document.getElementById('dateAbsence').value;
+            const periode = document.getElementById('periodeAbsence').value;
+            const motif = document.getElementById('motifAbsence').value;
+            const justifiee = document.getElementById('justifieeAbsence').value === 'true';
+            const commentaire = document.getElementById('commentaireAbsence').value;
+            
+            if (!eleveId || !date || !periode || !motif) {
+                alert('Veuillez remplir tous les champs obligatoires (*)');
+                return;
+            }
+            
+            const nouvelleAbsence = {
+                id: Date.now(),
+                eleve_id: eleveId,
+                date: date,
+                periode: periode,
+                motif: motif,
+                justifiee: justifiee,
+                commentaire: commentaire,
+                date_declaration: new Date().toISOString().split('T')[0],
+                declaree_par: user.id
+            };
+            
+            SCOLARIS_DATA.absences.push(nouvelleAbsence);
+            sauvegarderDonnees();
+            
+            alert('Absence déclarée avec succès !');
+            fermerModal();
+            afficherGestionAbsences();
+        }
+        
+        function justifierAbsence(absenceId) {
+            const absence = SCOLARIS_DATA.absences.find(a => a.id === absenceId);
+            
+            const modalHtml = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">✅ Justifier une absence</div>
+                        <button class="modal-close" onclick="fermerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div style="margin-bottom: 20px;">
+                            <p><strong>Élève :</strong> ${SCOLARIS_DATA.eleves.find(e => e.id === absence.eleve_id).nom} ${SCOLARIS_DATA.eleves.find(e => e.id === absence.eleve_id).prenom}</p>
+                            <p><strong>Date :</strong> ${formatDate(absence.date)}</p>
+                            <p><strong>Motif initial :</strong> ${absence.motif}</p>
+                        </div>
+                        
+                        <form id="formJustifierAbsence">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Type de justificatif</label>
+                                    <select class="form-control" id="typeJustificatif">
+                                        <option value="Certificat médical">Certificat médical</option>
+                                        <option value="Motif familial">Motif familial</option>
+                                        <option value="Convocation officielle">Convocation officielle</option>
+                                        <option value="Autre">Autre</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Date du justificatif</label>
+                                    <input type="date" class="form-control" id="dateJustificatif" 
+                                           value="${new Date().toISOString().split('T')[0]}">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Commentaire</label>
+                                    <textarea class="form-control" id="commentaireJustificatif" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="fermerModal()">Annuler</button>
+                        <button class="btn btn-primary" onclick="validerJustification(${absenceId})">
+                            <i class="fas fa-check-circle"></i> Valider la justification
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            ouvrirModal(modalHtml);
+        }
+        
+        function validerJustification(absenceId) {
+            const absenceIndex = SCOLARIS_DATA.absences.findIndex(a => a.id === absenceId);
+            
+            if (absenceIndex === -1) return;
+            
+            SCOLARIS_DATA.absences[absenceIndex].justifiee = true;
+            SCOLARIS_DATA.absences[absenceIndex].type_justificatif = document.getElementById('typeJustificatif').value;
+            SCOLARIS_DATA.absences[absenceIndex].date_justification = document.getElementById('dateJustificatif').value;
+            SCOLARIS_DATA.absences[absenceIndex].commentaire_justification = document.getElementById('commentaireJustificatif').value;
+            
+            sauvegarderDonnees();
+            alert('Absence justifiée avec succès !');
+            fermerModal();
+            afficherGestionAbsences();
+        }
+        
+        // ============================================
+        // FONCTIONS UTILITAIRES
+        // ============================================
+        
+        function sauvegarderDonnees() {
+            localStorage.setItem('SCOLARIS_DATA', JSON.stringify(SCOLARIS_DATA));
+        }
+        
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('fr-FR');
+        }
+        
+        function ouvrirModal(html) {
+            document.getElementById('modalGenerique').innerHTML = html;
+            document.getElementById('modalGenerique').style.display = 'flex';
+        }
+        
+        function fermerModal() {
+            document.getElementById('modalGenerique').style.display = 'none';
+        }
+        
+        function setActiveMenu(menuId) {
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.menu === menuId) {
+                    item.classList.add('active');
+                }
+            });
+        }
+        
+        function deconnexion() {
+            if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+                localStorage.removeItem('SCOLARIS_USER');
+                window.location.href = 'index.html';
+            }
+        }
+        
+        function genererMenu() {
+            let menuHtml = '';
+            
+            // Menu pour administrateur/proviseur
+            if (user.role === 'admin_systeme' || user.role === 'proviseur') {
+                menuHtml = `
+                    <li class="menu-item active" data-menu="dashboard" onclick="afficherTableauDeBord()">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Tableau de bord</span>
+                    </li>
+                    <li class="menu-item" data-menu="eleves" onclick="afficherGestionEleves()">
+                        <i class="fas fa-user-graduate"></i>
+                        <span>Élèves</span>
+                    </li>
+                    <li class="menu-item" data-menu="classes" onclick="afficherGestionClasses()">
+                        <i class="fas fa-users"></i>
+                        <span>Classes</span>
+                    </li>
+                    <li class="menu-item" data-menu="notes" onclick="afficherGestionNotes()">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span>Notes</span>
+                    </li>
+                    <li class="menu-item" data-menu="absences" onclick="afficherGestionAbsences()">
+                        <i class="fas fa-user-clock"></i>
+                        <span>Absences</span>
+                    </li>
+                    <li class="menu-item" data-menu="emploi_du_temps" onclick="afficherEmploiDuTemps()">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Emploi du temps</span>
+                    </li>
+                    <li class="menu-item" data-menu="communication" onclick="afficherMessagerie()">
+                        <i class="fas fa-comments"></i>
+                        <span>Communication</span>
+                    </li>
+                    <li class="menu-item" data-menu="documents" onclick="afficherDocuments()">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Documents</span>
+                    </li>
+                    <li class="menu-item has-submenu" data-menu="parametres">
+                        <i class="fas fa-cog"></i>
+                        <span>Paramètres</span>
+                    </li>
+                `;
+            }
+            // Menu pour enseignant
+            else if (user.role === 'enseignant') {
+                menuHtml = `
+                    <li class="menu-item active" data-menu="dashboard" onclick="afficherTableauDeBord()">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Tableau de bord</span>
+                    </li>
+                    <li class="menu-item" data-menu="mes_classes" onclick="afficherMesClasses()">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                        <span>Mes classes</span>
+                    </li>
+                    <li class="menu-item" data-menu="notes" onclick="afficherGestionNotes()">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span>Notes</span>
+                    </li>
+                    <li class="menu-item" data-menu="emploi_du_temps" onclick="afficherEmploiDuTemps()">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Emploi du temps</span>
+                    </li>
+                    <li class="menu-item" data-menu="cahier_textes" onclick="afficherCahierTextes()">
+                        <i class="fas fa-book"></i>
+                        <span>Cahier de textes</span>
+                    </li>
+                    <li class="menu-item" data-menu="communication" onclick="afficherMessagerie()">
+                        <i class="fas fa-comments"></i>
+                        <span>Communication</span>
+                    </li>
+                `;
+            }
+            // Menu pour élève
+            else if (user.role === 'eleve') {
+                menuHtml = `
+                    <li class="menu-item active" data-menu="dashboard" onclick="afficherTableauDeBordEleve()">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Tableau de bord</span>
+                    </li>
+                    <li class="menu-item" data-menu="mes_notes" onclick="afficherMesNotes()">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span>Mes notes</span>
+                    </li>
+                    <li class="menu-item" data-menu="emploi_du_temps" onclick="afficherMonEmploiDuTemps()">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Emploi du temps</span>
+                    </li>
+                    <li class="menu-item" data-menu="cahier_textes" onclick="afficherMonCahierTextes()">
+                        <i class="fas fa-book"></i>
+                        <span>Cahier de textes</span>
+                    </li>
+                    <li class="menu-item" data-menu="messagerie" onclick="afficherMessagerieEleve()">
+                        <i class="fas fa-comments"></i>
+                        <span>Messagerie</span>
+                    </li>
+                `;
+            }
+            
+            document.getElementById('menuItems').innerHTML = menuHtml;
+        }
+        
+        // ============================================
+        // INITIALISATION
+        // ============================================
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Afficher les informations utilisateur
+            document.getElementById('userName').textContent = `${user.prenom} ${user.nom}`;
+            document.getElementById('userRole').textContent = 
+                SCOLARIS_DATA.roles.find(r => r.id === user.role)?.nom || user.role;
+            document.getElementById('userAvatar').textContent = 
+                user.prenom.charAt(0) + user.nom.charAt(0);
+            
+            // Générer le menu
+            genererMenu();
+            
+            // Afficher le tableau de bord par défaut
+            afficherTableauDeBord();
+            
+            // Fermer le modal en cliquant à l'extérieur
+            document.getElementById('modalGenerique').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    fermerModal();
+                }
+            });
+        });
+        
+        // ============================================
+        // FONCTIONS MANQUANTES (à implémenter si besoin)
+        // ============================================
+        
+        function afficherDocuments() {
+            document.getElementById('contenuPrincipal').innerHTML = `
+                <h1 style="margin-bottom: 25px; color: var(--couleur-principale);">Documents et rapports</h1>
+                <div class="mention-legale">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Module de documents en cours de développement. Les fonctionnalités d'export sont déjà disponibles dans chaque module.
+                </div>
+            `;
+            setActiveMenu('documents');
+        }
+        
+        function afficherMessagerie() {
+            document.getElementById('contenuPrincipal').innerHTML = `
+                <h1 style="margin-bottom: 25px; color: var(--couleur-principale);">Messagerie</h1>
+                <div class="mention-legale">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Module de messagerie en cours de développement.
+                </div>
+            `;
+            setActiveMenu('communication');
+        }
+        
+        function afficherCahierTextes() {
+            document.getElementById('contenuPrincipal').innerHTML = `
+                <h1 style="margin-bottom: 25px; color: var(--couleur-principale);">Cahier de textes</h1>
+                <div class="mention-legale">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Le cahier de textes est intégré à l'emploi du temps. Consultez l'emploi du temps pour ajouter des devoirs.
+                </div>
+            `;
+            setActiveMenu('cahier_textes');
+        }
+        
+        // Fonctions de placeholder pour les onglets
+        function changerTabClasses(tab) {
+            // Implémentation des onglets de gestion des classes
+        }
+        
+        function changerTabEleves(tab) {
+            // Implémentation des onglets de gestion des élèves
+        }
+        
+        function changerTabNotes(tab) {
+            // Implémentation des onglets de gestion des notes
+        }
+        
+        function changerTabAbsences(tab) {
+            // Implémentation des onglets de gestion des absences
+        }
+        
+        function changerTabFicheEleve(tab, eleveId) {
+            // Implémentation des onglets de la fiche élève
+        }
+    </script>
+</body>
+</html>
