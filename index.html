@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCOLARIS - Connexion</title>
+    <style>
+        :root {
+            --couleur-principale: #2C3E50;
+            --couleur-secondaire: #3498DB;
+            --couleur-accent: #E74C3C;
+            --couleur-fond: #F8F9FA;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--couleur-principale) 0%, #1A2530 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .login-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 450px;
+            overflow: hidden;
+        }
+        
+        .login-header {
+            background-color: var(--couleur-principale);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        
+        .login-header h1 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+        
+        .login-header .etablissement {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .login-content {
+            padding: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--couleur-principale);
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--couleur-secondaire);
+        }
+        
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--couleur-secondaire);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+        
+        .btn-login:hover {
+            background-color: #2980b9;
+        }
+        
+        .alert {
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .alert-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .login-footer {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: #666;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>SCOLARIS</h1>
+            <div class="etablissement">Collège Victor Hugo • 2025-2026</div>
+        </div>
+        
+        <div class="login-content">
+            <div id="alertMessage" class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                <div>
+                    <strong>Première connexion :</strong><br>
+                    Identifiant: <code>admin</code><br>
+                    Mot de passe: <code>scolaris2025</code>
+                </div>
+            </div>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="identifiant">Identifiant</label>
+                    <input type="text" id="identifiant" class="form-control" value="admin">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Mot de passe</label>
+                    <input type="password" id="password" class="form-control" value="scolaris2025">
+                </div>
+                
+                <button type="submit" class="btn-login">
+                    <i class="fas fa-sign-in-alt"></i> Se connecter
+                </button>
+            </form>
+            
+            <div class="login-footer">
+                Cette plateforme est une simulation fictive à usage pédagogique, inspirée des outils de gestion scolaire existants.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialiser les données si nécessaire
+        if (!localStorage.getItem('SCOLARIS_DATA')) {
+            const donneesInitiales = {
+                system: {
+                    nom: "SCOLARIS",
+                    version: "4.0.0",
+                    etablissement: {
+                        nom: "Collège Victor Hugo",
+                        type: "Collège public",
+                        adresse: "12 Rue de l'Éducation, 75000 Villefranche",
+                        telephone: "01 23 45 67 89",
+                        email: "secretariat@college-victor-hugo.fr",
+                        annee_scolaire: "2025-2026",
+                        directeur: "M. Laurent Dubois"
+                    },
+                    premier_lancement: false
+                },
+                
+                utilisateurs: [
+                    {
+                        id: 1,
+                        nom: "Admin",
+                        prenom: "Système",
+                        role: "admin_systeme",
+                        identifiant: "admin",
+                        password: "scolaris2025",
+                        email: "admin@college-victor-hugo.fr",
+                        telephone: "01 23 45 67 90",
+                        date_creation: "2025-09-01",
+                        actif: true,
+                        permissions: ["full_access"]
+                    },
+                    {
+                        id: 2,
+                        nom: "Dubois",
+                        prenom: "Laurent",
+                        role: "proviseur",
+                        identifiant: "l.dubois",
+                        password: "proviseur123",
+                        email: "laurent.dubois@college-victor-hugo.fr",
+                        telephone: "01 23 45 67 91",
+                        date_creation: "2025-09-01",
+                        actif: true
+                    },
+                    {
+                        id: 3,
+                        nom: "Rousseau",
+                        prenom: "Émilie",
+                        role: "enseignant",
+                        identifiant: "e.rousseau",
+                        password: "enseignant123",
+                        email: "emilie.rousseau@college-victor-hugo.fr",
+                        telephone: "01 23 45 67 92",
+                        date_creation: "2025-09-01",
+                        actif: true,
+                        matieres: [1],
+                        classes: ["6A"]
+                    }
+                ],
+                
+                roles: [
+                    { id: "admin_systeme", nom: "Administrateur système" },
+                    { id: "proviseur", nom: "Proviseur" },
+                    { id: "proviseur_adjoint", nom: "Proviseur adjoint" },
+                    { id: "cpe", nom: "Conseiller Principal d'Éducation" },
+                    { id: "secretariat", nom: "Secrétariat" },
+                    { id: "enseignant", nom: "Enseignant" },
+                    { id: "eleve", nom: "Élève" },
+                    { id: "parent", nom: "Parent" }
+                ],
+                
+                classes: [
+                    { 
+                        id: "6A", 
+                        nom: "6ème A", 
+                        niveau: "6ème", 
+                        prof_principal: "Mme Émilie Rousseau",
+                        prof_principal_id: 3,
+                        effectif: 28,
+                        salle: "Salle 201"
+                    },
+                    { 
+                        id: "5B", 
+                        nom: "5ème B", 
+                        niveau: "5ème", 
+                        prof_principal: "M. Philippe Moreau",
+                        prof_principal_id: null,
+                        effectif: 27,
+                        salle: "Salle 102"
+                    },
+                    { 
+                        id: "4C", 
+                        nom: "4ème C", 
+                        niveau: "4ème", 
+                        prof_principal: "Mme Isabelle Leroy",
+                        prof_principal_id: null,
+                        effectif: 26,
+                        salle: "Salle 305"
+                    }
+                ],
+                
+                eleves: [
+                    {
+                        id: 101,
+                        nom: "Bernard",
+                        prenom: "Lucas",
+                        classe: "6ème A",
+                        classe_id: "6A",
+                        date_naissance: "2012-05-15",
+                        responsable_1: "Mme Claire Bernard",
+                        tel_responsable_1: "06 12 34 56 78",
+                        email_responsable_1: "claire.bernard@email.fr",
+                        date_inscription: "2025-09-01"
+                    },
+                    {
+                        id: 102,
+                        nom: "Petit",
+                        prenom: "Emma",
+                        classe: "5ème B",
+                        classe_id: "5B",
+                        date_naissance: "2011-08-22",
+                        responsable_1: "M. Jean Petit",
+                        tel_responsable_1: "06 23 45 67 89",
+                        email_responsable_1: "jean.petit@email.fr",
+                        date_inscription: "2025-09-01"
+                    },
+                    {
+                        id: 103,
+                        nom: "Martin",
+                        prenom: "Thomas",
+                        classe: "6ème A",
+                        classe_id: "6A",
+                        date_naissance: "2012-03-10",
+                        responsable_1: "Mme Sophie Martin",
+                        tel_responsable_1: "06 34 56 78 90",
+                        email_responsable_1: "sophie.martin@email.fr",
+                        date_inscription: "2025-09-01"
+                    }
+                ],
+                
+                matieres: [
+                    { id: 1, nom: "Français", coefficient: 3, couleur: "#4A6FA5" },
+                    { id: 2, nom: "Mathématiques", coefficient: 3, couleur: "#D96459" },
+                    { id: 3, nom: "Histoire-Géographie", coefficient: 2, couleur: "#388659" },
+                    { id: 4, nom: "Sciences de la Vie et de la Terre", coefficient: 2, couleur: "#8E6C88" },
+                    { id: 5, nom: "Langue Vivante A (Anglais)", coefficient: 2, couleur: "#3498DB" }
+                ],
+                
+                notes: [
+                    {
+                        id: 1001,
+                        eleve_id: 101,
+                        matiere_id: 1,
+                        note: 15.5,
+                        coefficient: 1,
+                        type: "Devoir surveillé",
+                        date: "2025-10-15",
+                        commentaire: "Bon travail, attention à l'orthographe",
+                        trimestre: 1
+                    },
+                    {
+                        id: 1002,
+                        eleve_id: 101,
+                        matiere_id: 2,
+                        note: 13.0,
+                        coefficient: 1,
+                        type: "Contrôle",
+                        date: "2025-10-10",
+                        commentaire: "Bien mais quelques erreurs de calcul",
+                        trimestre: 1
+                    }
+                ],
+                
+                absences: [
+                    {
+                        id: 2001,
+                        eleve_id: 101,
+                        date: "2025-10-10",
+                        periode: "matin",
+                        justifiee: true,
+                        motif: "Maladie avec certificat médical",
+                        date_justification: "2025-10-11"
+                    }
+                ],
+                
+                retards: [
+                    {
+                        id: 3001,
+                        eleve_id: 101,
+                        date: "2025-10-15",
+                        heure: "08:15",
+                        duree: 15,
+                        motif: "Problème de transport",
+                        justifie: false
+                    }
+                ],
+                
+                devoirs: [
+                    {
+                        id: 4001,
+                        matiere_id: 1,
+                        classe_id: "6A",
+                        date_creation: "2025-10-15",
+                        date_pour: "2025-10-17",
+                        description: "Apprendre la leçon sur le présent + exercices 1 à 3",
+                        enseignant_id: 3,
+                        statut: "actif"
+                    }
+                ],
+                
+                emploi_du_temps: [
+                    {
+                        id: 5001,
+                        classe_id: "6A",
+                        jour: "lundi",
+                        heure_debut: "08:00",
+                        heure_fin: "09:00",
+                        matiere_id: 1,
+                        enseignant_id: 3,
+                        salle: "Salle 201"
+                    }
+                ],
+                
+                messages: [],
+                documents: []
+            };
+            
+            localStorage.setItem('SCOLARIS_DATA', JSON.stringify(donneesInitiales));
+        }
+        
+        // Gestion de la connexion
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const identifiant = document.getElementById('identifiant').value;
+            const password = document.getElementById('password').value;
+            
+            const data = JSON.parse(localStorage.getItem('SCOLARIS_DATA'));
+            const utilisateur = data.utilisateurs.find(u => 
+                u.identifiant === identifiant && u.password === password && u.actif === true
+            );
+            
+            if (utilisateur) {
+                localStorage.setItem('SCOLARIS_USER', JSON.stringify(utilisateur));
+                window.location.href = 'dashboard.html';
+            } else {
+                const alert = document.getElementById('alertMessage');
+                alert.className = 'alert alert-danger';
+                alert.innerHTML = `
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div>
+                        <strong>Erreur de connexion</strong><br>
+                        Identifiant ou mot de passe incorrect
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
