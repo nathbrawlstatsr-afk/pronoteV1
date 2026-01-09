@@ -4080,4 +4080,4 @@
                     </div>
                     <div class="modal-body">
                         <p><strong>Jour :</strong> ${jours[jourIndex]}</p>
-                        <p><strong>C
+                        <p><strong>Créneau :</strong> $ {creneaux[creneauIndex]}</p>
