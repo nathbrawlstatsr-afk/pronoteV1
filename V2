@@ -705,4 +705,3379 @@
         }
         
         function formatDate(dateStr) {
-            if
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('fr-FR');
+        }
+        
+        function formatHeure(heureStr) {
+            if (!heureStr) return '';
+            return heureStr.substring(0, 5);
+        }
+        
+        function ouvrirModal(html) {
+            document.getElementById('modalGenerique').innerHTML = html;
+            document.getElementById('modalGenerique').style.display = 'flex';
+        }
+        
+        function fermerModal() {
+            document.getElementById('modalGenerique').style.display = 'none';
+        }
+        
+        function setActiveMenu(menuId) {
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.menu === menuId) {
+                    item.classList.add('active');
+                }
+            });
+        }
+        
+        function deconnexion() {
+            if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+                localStorage.removeItem('SCOLARIS_USER');
+                window.location.href = 'index.html';
+            }
+        }
+        
+        function afficherInformationsEtablissement() {
+            const etablissement = SCOLARIS_DATA.system.etablissement;
+            document.getElementById('etablissementInfo').innerHTML = `
+                <div>${etablissement.nom}</div>
+                <div style="font-size: 0.8rem; color: #666;">${etablissement.annee_scolaire}</div>
+            `;
+        }
+        
+        function afficherInformationsUtilisateur() {
+            document.getElementById('userName').textContent = `${utilisateurCourant.prenom} ${utilisateurCourant.nom}`;
+            document.getElementById('userRole').textContent = 
+                SCOLARIS_DATA.roles.find(r => r.id === utilisateurCourant.role)?.nom || utilisateurCourant.role;
+            document.getElementById('userAvatar').textContent = 
+                utilisateurCourant.prenom.charAt(0) + utilisateurCourant.nom.charAt(0);
+        }
+        
+        function gererResponsive() {
+            // Adaptation responsive du menu
+            const menuItems = document.querySelector('.menu-items');
+            if (window.innerWidth < 768) {
+                menuItems.style.fontSize = '0.9rem';
+            } else {
+                menuItems.style.fontSize = '1rem';
+            }
+        }
+        
+        function genererMenu() {
+            let menuHtml = '';
+            const role = utilisateurCourant.role;
+            
+            if (role === 'admin_systeme' || role === 'proviseur' || role === 'proviseur_adjoint') {
+                menuHtml = `
+                    <li class="menu-item active" data-menu="dashboard" onclick="afficherTableauDeBord()">
+                        <i class="fas fa-tachometer-alt"></i> Tableau de bord
+                    </li>
+                    <li class="menu-item" data-menu="carnet" onclick="afficherCarnetComplet()">
+                        <i class="fas fa-book"></i> Carnet scolaire
+                    </li>
+                    <li class="menu-item" data-menu="utilisateurs" onclick="afficherGestionUtilisateurs()">
+                        <i class="fas fa-users-cog"></i> Utilisateurs
+                    </li>
+                    <li class="menu-item" data-menu="eleves" onclick="afficherGestionEleves()">
+                        <i class="fas fa-user-graduate"></i> Élèves
+                    </li>
+                    <li class="menu-item" data-menu="enseignants" onclick="afficherGestionEnseignants()">
+                        <i class="fas fa-chalkboard-teacher"></i> Enseignants
+                    </li>
+                    <li class="menu-item" data-menu="classes" onclick="afficherGestionClasses()">
+                        <i class="fas fa-users"></i> Classes
+                    </li>
+                    <li class="menu-item" data-menu="matieres" onclick="afficherGestionMatieres()">
+                        <i class="fas fa-book-open"></i> Matières
+                    </li>
+                    <li class="menu-item" data-menu="cours" onclick="afficherGestionCours()">
+                        <i class="fas fa-calendar-alt"></i> Cours
+                    </li>
+                    <li class="menu-item" data-menu="emploi_temps" onclick="afficherEmploiDuTemps()">
+                        <i class="fas fa-calendar-week"></i> Emploi du temps
+                    </li>
+                    <li class="menu-item" data-menu="parametres" onclick="afficherParametres()">
+                        <i class="fas fa-cog"></i> Paramètres
+                    </li>
+                `;
+            } else if (role === 'enseignant') {
+                menuHtml = `
+                    <li class="menu-item active" data-menu="dashboard" onclick="afficherTableauDeBord()">
+                        <i class="fas fa-tachometer-alt"></i> Tableau de bord
+                    </li>
+                    <li class="menu-item" data-menu="mes_classes" onclick="afficherMesClasses()">
+                        <i class="fas fa-chalkboard-teacher"></i> Mes classes
+                    </li>
+                    <li class="menu-item" data-menu="carnet" onclick="afficherCarnetComplet()">
+                        <i class="fas fa-book"></i> Carnet de notes
+                    </li>
+                    <li class="menu-item" data-menu="emploi_temps" onclick="afficherEmploiDuTemps()">
+                        <i class="fas fa-calendar-alt"></i> Emploi du temps
+                    </li>
+                    <li class="menu-item" data-menu="devoirs" onclick="afficherGestionDevoirs()">
+                        <i class="fas fa-tasks"></i> Devoirs
+                    </li>
+                    <li class="menu-item" data-menu="cours" onclick="afficherGestionCours()">
+                        <i class="fas fa-calendar-alt"></i> Mes cours
+                    </li>
+                `;
+            } else if (role === 'eleve') {
+                menuHtml = `
+                    <li class="menu-item active" data-menu="dashboard" onclick="afficherTableauDeBordEleve()">
+                        <i class="fas fa-tachometer-alt"></i> Tableau de bord
+                    </li>
+                    <li class="menu-item" data-menu="mes_notes" onclick="afficherMesNotes()">
+                        <i class="fas fa-graduation-cap"></i> Mes notes
+                    </li>
+                    <li class="menu-item" data-menu="emploi_temps" onclick="afficherEmploiDuTempsEleve()">
+                        <i class="fas fa-calendar-alt"></i> Emploi du temps
+                    </li>
+                    <li class="menu-item" data-menu="devoirs" onclick="afficherMesDevoirs()">
+                        <i class="fas fa-tasks"></i> Mes devoirs
+                    </li>
+                `;
+            }
+            
+            document.getElementById('menuItems').innerHTML = menuHtml;
+        }
+        
+        // ============================================
+        // TABLEAU DE BORD
+        // ============================================
+        function afficherTableauDeBord() {
+            currentView = 'dashboard';
+            const totalEleves = SCOLARIS_DATA.eleves.length;
+            const totalClasses = SCOLARIS_DATA.classes.length;
+            const totalEnseignants = SCOLARIS_DATA.utilisateurs.filter(u => u.role === 'enseignant' && u.actif).length;
+            const today = new Date().toISOString().split('T')[0];
+            const absencesAujourdhui = SCOLARIS_DATA.absences.filter(a => a.date === today).length;
+            
+            document.getElementById('contenuPrincipal').innerHTML = `
+                <h1 style="margin-bottom: 25px; color: var(--couleur-principale);">Tableau de bord</h1>
+                
+                <div class="cards-container">
+                    <div class="card" onclick="afficherGestionEleves()" style="cursor: pointer;">
+                        <div class="card-title"><i class="fas fa-user-graduate"></i> Élèves inscrits</div>
+                        <div class="card-value">${totalEleves}</div>
+                        <div class="card-subtitle">Total de l'établissement</div>
+                    </div>
+                    <div class="card" onclick="afficherGestionClasses()" style="cursor: pointer;">
+                        <div class="card-title"><i class="fas fa-users"></i> Classes</div>
+                        <div class="card-value">${totalClasses}</div>
+                        <div class="card-subtitle">Classes actives</div>
+                    </div>
+                    <div class="card" onclick="afficherGestionEnseignants()" style="cursor: pointer;">
+                        <div class="card-title"><i class="fas fa-chalkboard-teacher"></i> Enseignants</div>
+                        <div class="card-value">${totalEnseignants}</div>
+                        <div class="card-subtitle">Personnel enseignant</div>
+                    </div>
+                    <div class="card" onclick="afficherCarnetComplet()" style="cursor: pointer;">
+                        <div class="card-title"><i class="fas fa-user-clock"></i> Absences aujourd'hui</div>
+                        <div class="card-value">${absencesAujourdhui}</div>
+                        <div class="card-subtitle">Élèves absents</div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group" style="flex: 2;">
+                        <div class="table-container">
+                            <div class="table-header">
+                                <div class="table-title">Dernières activités</div>
+                            </div>
+                            <div class="table-content">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Type</th>
+                                            <th>Description</th>
+                                            <th>Utilisateur</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>${new Date().toLocaleDateString('fr-FR')}</td>
+                                            <td><span class="badge badge-success">Connexion</span></td>
+                                            <td>Vous êtes connecté(e)</td>
+                                            <td>${utilisateurCourant.prenom} ${utilisateurCourant.nom}</td>
+                                        </tr>
+                                        ${totalEleves === 0 ? `
+                                        <tr>
+                                            <td>Aujourd'hui</td>
+                                            <td><span class="badge badge-warning">Action</span></td>
+                                            <td>Ajoutez vos premiers élèves</td>
+                                            <td>Système</td>
+                                        </tr>` : ''}
+                                        ${SCOLARIS_DATA.observations.slice(-3).reverse().map(obs => {
+                                            const eleve = SCOLARIS_DATA.eleves.find(e => e.id === obs.eleve_id);
+                                            return `
+                                                <tr>
+                                                    <td>${formatDate(obs.date)}</td>
+                                                    <td><span class="badge ${obs.type === 'positif' ? 'badge-success' : 'badge-danger'}">Observation</span></td>
+                                                    <td>${obs.contenu.substring(0, 50)}...</td>
+                                                    <td>${eleve ? eleve.prenom + ' ' + eleve.nom : 'Inconnu'}</td>
+                                                </tr>
+                                            `;
+                                        }).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <div class="table-container">
+                            <div class="table-header">
+                                <div class="table-title">Actions rapides</div>
+                            </div>
+                            <div class="table-content" style="padding: 15px;">
+                                <div style="display: flex; flex-direction: column; gap: 10px;">
+                                    ${(utilisateurCourant.role === 'admin_systeme' || utilisateurCourant.role === 'proviseur' || utilisateurCourant.role === 'proviseur_adjoint') ? `
+                                    <button class="btn btn-primary" onclick="afficherGestionUtilisateurs()">
+                                        <i class="fas fa-user-plus"></i> Ajouter un utilisateur
+                                    </button>
+                                    <button class="btn btn-primary" onclick="afficherGestionEleves()">
+                                        <i class="fas fa-user-graduate"></i> Inscrire un élève
+                                    </button>
+                                    <button class="btn btn-primary" onclick="afficherGestionEnseignants()">
+                                        <i class="fas fa-chalkboard-teacher"></i> Ajouter un enseignant
+                                    </button>
+                                    ` : ''}
+                                    ${(utilisateurCourant.role === 'enseignant') ? `
+                                    <button class="btn btn-primary" onclick="afficherCarnetComplet()">
+                                        <i class="fas fa-book"></i> Saisir des notes
+                                    </button>
+                                    <button class="btn btn-primary" onclick="afficherEmploiDuTemps()">
+                                        <i class="fas fa-calendar-alt"></i> Voir mon emploi du temps
+                                    </button>
+                                    ` : ''}
+                                    <button class="btn btn-secondary" onclick="afficherParametres()">
+                                        <i class="fas fa-cog"></i> Paramètres
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mention-legale">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Cette plateforme est une simulation fictive à usage pédagogique.
+                </div>
+            `;
+            setActiveMenu('dashboard');
+        }
+        
+        // ============================================
+        // CARNET SCOLAIRE COMPLET
+        // ============================================
+        function afficherCarnetComplet() {
+            currentView = 'carnet';
+            document.getElementById('contenuPrincipal').innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h1 style="color: var(--couleur-principale);">Carnet scolaire</h1>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-primary" onclick="ouvrirModalNouvelleNote()">
+                            <i class="fas fa-plus"></i> Nouvelle note
+                        </button>
+                        <button class="btn btn-primary" onclick="ouvrirModalNouvelleObservation()">
+                            <i class="fas fa-comment-alt"></i> Observation
+                        </button>
+                        <button class="btn btn-primary" onclick="ouvrirModalNouvelleExclusion()">
+                            <i class="fas fa-user-slash"></i> Sanction
+                        </button>
+                        <button class="btn btn-primary" onclick="ouvrirModalNouvelleAbsence()">
+                            <i class="fas fa-user-times"></i> Absence
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="tabs">
+                    <div class="tab active" onclick="changerOngletCarnet('notes')">Notes</div>
+                    <div class="tab" onclick="changerOngletCarnet('observations')">Observations</div>
+                    <div class="tab" onclick="changerOngletCarnet('exclusions')">Sanctions</div>
+                    <div class="tab" onclick="changerOngletCarnet('absences')">Absences</div>
+                    <div class="tab" onclick="changerOngletCarnet('retards')">Retards</div>
+                </div>
+                
+                <div id="contenuCarnet">
+                    ${genererContenuCarnetNotes()}
+                </div>
+            `;
+            setActiveMenu('carnet');
+        }
+        
+        function genererContenuCarnetNotes() {
+            return `
+                <div class="form-container">
+                    <h3 class="form-title">Saisie des notes</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Classe</label>
+                            <select class="form-control" id="filtreClasseNotes" onchange="filtrerNotesParClasse()">
+                                <option value="">Toutes les classes</option>
+                                ${SCOLARIS_DATA.classes.map(classe => 
+                                    `<option value="${classe.id}">${classe.nom}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Matière</label>
+                            <select class="form-control" id="filtreMatiereNotes" onchange="filtrerNotesParMatiere()">
+                                <option value="">Toutes les matières</option>
+                                ${SCOLARIS_DATA.matieres.map(matiere => 
+                                    `<option value="${matiere.id}">${matiere.nom}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Type d'évaluation</label>
+                            <select class="form-control" id="filtreTypeNotes">
+                                <option value="">Tous les types</option>
+                                <option value="devoir">Devoir</option>
+                                <option value="interrogation">Interrogation</option>
+                                <option value="examen">Examen</option>
+                                <option value="participation">Participation</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <div class="table-header">
+                            <div class="table-title">Notes des élèves</div>
+                            <button class="btn btn-secondary btn-small" onclick="exporterNotes()">
+                                <i class="fas fa-file-export"></i> Exporter
+                            </button>
+                        </div>
+                        <div class="table-content">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Élève</th>
+                                        <th>Classe</th>
+                                        <th>Matière</th>
+                                        <th>Note</th>
+                                        <th>Coefficient</th>
+                                        <th>Type</th>
+                                        <th>Date</th>
+                                        <th>Commentaire</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${SCOLARIS_DATA.notes.map(note => {
+                                        const eleve = SCOLARIS_DATA.eleves.find(e => e.id === note.eleve_id);
+                                        const classe = eleve ? SCOLARIS_DATA.classes.find(c => c.id === eleve.classe_id) : null;
+                                        const matiere = SCOLARIS_DATA.matieres.find(m => m.id === note.matiere_id);
+                                        return `
+                                            <tr>
+                                                <td>${eleve ? eleve.prenom + ' ' + eleve.nom : 'Inconnu'}</td>
+                                                <td>${classe ? classe.nom : 'Non affecté'}</td>
+                                                <td>${matiere ? matiere.nom : 'Inconnue'}</td>
+                                                <td><strong>${note.valeur}/20</strong></td>
+                                                <td>${note.coefficient || 1}</td>
+                                                <td><span class="badge badge-info">${note.type || 'Devoir'}</span></td>
+                                                <td>${formatDate(note.date)}</td>
+                                                <td>${note.commentaire || ''}</td>
+                                                <td>
+                                                    <div style="display: flex; gap: 5px;">
+                                                        <button class="btn btn-secondary btn-small" onclick="modifierNote(${note.id})">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
+                                                        <button class="btn btn-danger btn-small" onclick="supprimerNote(${note.id})">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        `;
+                                    }).join('')}
+                                    ${SCOLARIS_DATA.notes.length === 0 ? `
+                                    <tr>
+                                        <td colspan="9" style="text-align: center; padding: 30px; color: #666;">
+                                            <i class="fas fa-graduation-cap" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                                            Aucune note enregistrée. Commencez par saisir des notes.
+                                        </td>
+                                    </tr>` : ''}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function changerOngletCarnet(tab) {
+            // Activer l'onglet
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => {
+                if (t.textContent.includes(tab)) t.classList.add('active');
+            });
+            
+            let contenu = '';
+            
+            switch(tab) {
+                case 'notes':
+                    contenu = genererContenuCarnetNotes();
+                    break;
+                    
+                case 'observations':
+                    contenu = `
+                        <div class="form-container">
+                            <h3 class="form-title">Observations sur les élèves</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Filtrer par type</label>
+                                    <select class="form-control" onchange="filtrerObservations(this.value)">
+                                        <option value="">Tous les types</option>
+                                        <option value="positif">Positif</option>
+                                        <option value="negatif">Négatif</option>
+                                        <option value="comportement">Comportement</option>
+                                        <option value="travail">Travail</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div style="display: flex; flex-direction: column; gap: 15px;">
+                                ${SCOLARIS_DATA.observations.map(obs => {
+                                    const eleve = SCOLARIS_DATA.eleves.find(e => e.id === obs.eleve_id);
+                                    const classe = eleve ? SCOLARIS_DATA.classes.find(c => c.id === eleve.classe_id) : null;
+                                    const enseignant = SCOLARIS_DATA.utilisateurs.find(u => u.id === obs.enseignant_id);
+                                    const typeClass = {
+                                        'positif': 'observation-positif',
+                                        'negatif': 'observation-negatif',
+                                        'comportement': 'observation-comportement',
+                                        'travail': 'observation-positif'
+                                    }[obs.type] || 'observation-positif';
+                                    
+                                    return `
+                                        <div class="observation-card ${typeClass}">
+                                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                                <div>
+                                                    <strong>${eleve ? eleve.prenom + ' ' + eleve.nom : 'Élève inconnu'}</strong>
+                                                    <span style="color: #666; margin-left: 10px;">${classe ? classe.nom : ''}</span>
+                                                </div>
+                                                <div style="color: #666; font-size: 0.9rem;">
+                                                    ${formatDate(obs.date)}
+                                                </div>
+                                            </div>
+                                            <div style="margin-bottom: 10px;">
+                                                <span class="badge ${obs.type === 'positif' ? 'badge-success' : 'badge-danger'}">
+                                                    ${obs.type === 'positif' ? '👍 Positif' : 
+                                                      obs.type === 'negatif' ? '👎 Négatif' : 
+                                                      obs.type === 'comportement' ? '😐 Comportement' : '📚 Travail'}
+                                                </span>
+                                            </div>
+                                            <p style="margin-bottom: 10px;">${obs.contenu}</p>
+                                            <div style="font-size: 0.9rem; color: #666; display: flex; justify-content: space-between;">
+                                                <div>
+                                                    Par: ${enseignant ? enseignant.prenom + ' ' + enseignant.nom : 'Enseignant inconnu'}
+                                                </div>
+                                                <div>
+                                                    <button class="btn btn-secondary btn-small" onclick="modifierObservation(${obs.id})">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button class="btn btn-danger btn-small" onclick="supprimerObservation(${obs.id})">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                                
+                                ${SCOLARIS_DATA.observations.length === 0 ? `
+                                <div style="text-align: center; padding: 40px; color: #666;">
+                                    <i class="fas fa-comment-alt" style="font-size: 3rem; margin-bottom: 20px;"></i>
+                                    <h3>Aucune observation</h3>
+                                    <p>Commencez par créer des observations sur les élèves.</p>
+                                </div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'exclusions':
+                    contenu = `
+                        <div class="form-container">
+                            <h3 class="form-title">Sanctions et exclusions</h3>
+                            <div class="table-container">
+                                <div class="table-header">
+                                    <div class="table-title">Liste des sanctions</div>
+                                </div>
+                                <div class="table-content">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Élève</th>
+                                                <th>Classe</th>
+                                                <th>Type</th>
+                                                <th>Durée</th>
+                                                <th>Date début</th>
+                                                <th>Date fin</th>
+                                                <th>Motif</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${SCOLARIS_DATA.exclusions.map(exclusion => {
+                                                const eleve = SCOLARIS_DATA.eleves.find(e => e.id === exclusion.eleve_id);
+                                                const classe = eleve ? SCOLARIS_DATA.classes.find(c => c.id === eleve.classe_id) : null;
+                                                return `
+                                                    <tr>
+                                                        <td>${eleve ? eleve.prenom + ' ' + eleve.nom : 'Inconnu'}</td>
+                                                        <td>${classe ? classe.nom : 'Non affecté'}</td>
+                                                        <td><span class="badge badge-danger">${exclusion.type}</span></td>
+                                                        <td>${exclusion.duree}</td>
+                                                        <td>${formatDate(exclusion.date_debut)}</td>
+                                                        <td>${formatDate(exclusion.date_fin)}</td>
+                                                        <td>${exclusion.motif}</td>
+                                                        <td>
+                                                            <div style="display: flex; gap: 5px;">
+                                                                <button class="btn btn-secondary btn-small" onclick="modifierExclusion(${exclusion.id})">
+                                                                    <i class="fas fa-edit"></i>
+                                                                </button>
+                                                                <button class="btn btn-danger btn-small" onclick="supprimerExclusion(${exclusion.id})">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                `;
+                                            }).join('')}
+                                            ${SCOLARIS_DATA.exclusions.length === 0 ? `
+                                            <tr>
+                                                <td colspan="8" style="text-align: center; padding: 30px; color: #666;">
+                                                    <i class="fas fa-user-slash" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                                                    Aucune sanction enregistrée.
+                                                </td>
+                                            </tr>` : ''}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'absences':
+                    contenu = `
+                        <div class="form-container">
+                            <h3 class="form-title">Gestion des absences</h3>
+                            <div class="table-container">
+                                <div class="table-header">
+                                    <div class="table-title">Absences des élèves</div>
+                                </div>
+                                <div class="table-content">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Élève</th>
+                                                <th>Classe</th>
+                                                <th>Date</th>
+                                                <th>Type</th>
+                                                <th>Justifiée</th>
+                                                <th>Motif</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${SCOLARIS_DATA.absences.map(absence => {
+                                                const eleve = SCOLARIS_DATA.eleves.find(e => e.id === absence.eleve_id);
+                                                const classe = eleve ? SCOLARIS_DATA.classes.find(c => c.id === eleve.classe_id) : null;
+                                                return `
+                                                    <tr>
+                                                        <td>${eleve ? eleve.prenom + ' ' + eleve.nom : 'Inconnu'}</td>
+                                                        <td>${classe ? classe.nom : 'Non affecté'}</td>
+                                                        <td>${formatDate(absence.date)}</td>
+                                                        <td><span class="badge badge-warning">${absence.type || 'Absence'}</span></td>
+                                                        <td>${absence.justifiee ? 
+                                                            '<span class="badge badge-success">Oui</span>' : 
+                                                            '<span class="badge badge-danger">Non</span>'}</td>
+                                                        <td>${absence.motif || ''}</td>
+                                                        <td>
+                                                            <div style="display: flex; gap: 5px;">
+                                                                <button class="btn btn-secondary btn-small" onclick="modifierAbsence(${absence.id})">
+                                                                    <i class="fas fa-edit"></i>
+                                                                </button>
+                                                                <button class="btn btn-danger btn-small" onclick="supprimerAbsence(${absence.id})">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                `;
+                                            }).join('')}
+                                            ${SCOLARIS_DATA.absences.length === 0 ? `
+                                            <tr>
+                                                <td colspan="7" style="text-align: center; padding: 30px; color: #666;">
+                                                    <i class="fas fa-user-times" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                                                    Aucune absence enregistrée.
+                                                </td>
+                                            </tr>` : ''}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'retards':
+                    contenu = `
+                        <div class="form-container">
+                            <h3 class="form-title">Gestion des retards</h3>
+                            <div class="table-container">
+                                <div class="table-header">
+                                    <div class="table-title">Retards des élèves</div>
+                                </div>
+                                <div class="table-content">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Élève</th>
+                                                <th>Classe</th>
+                                                <th>Date</th>
+                                                <th>Heure</th>
+                                                <th>Durée</th>
+                                                <th>Justifié</th>
+                                                <th>Motif</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${SCOLARIS_DATA.retards.map(retard => {
+                                                const eleve = SCOLARIS_DATA.eleves.find(e => e.id === retard.eleve_id);
+                                                const classe = eleve ? SCOLARIS_DATA.classes.find(c => c.id === eleve.classe_id) : null;
+                                                return `
+                                                    <tr>
+                                                        <td>${eleve ? eleve.prenom + ' ' + eleve.nom : 'Inconnu'}</td>
+                                                        <td>${classe ? classe.nom : 'Non affecté'}</td>
+                                                        <td>${formatDate(retard.date)}</td>
+                                                        <td>${retard.heure || ''}</td>
+                                                        <td>${retard.duree || ''}</td>
+                                                        <td>${retard.justifie ? 
+                                                            '<span class="badge badge-success">Oui</span>' : 
+                                                            '<span class="badge badge-danger">Non</span>'}</td>
+                                                        <td>${retard.motif || ''}</td>
+                                                        <td>
+                                                            <div style="display: flex; gap: 5px;">
+                                                                <button class="btn btn-secondary btn-small" onclick="modifierRetard(${retard.id})">
+                                                                    <i class="fas fa-edit"></i>
+                                                                </button>
+                                                                <button class="btn btn-danger btn-small" onclick="supprimerRetard(${retard.id})">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                `;
+                                            }).join('')}
+                                            ${SCOLARIS_DATA.retards.length === 0 ? `
+                                            <tr>
+                                                <td colspan="8" style="text-align: center; padding: 30px; color: #666;">
+                                                    <i class="fas fa-clock" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                                                    Aucun retard enregistré.
+                                                </td>
+                                            </tr>` : ''}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+            }
+            
+            document.getElementById('contenuCarnet').innerHTML = contenu;
+        }
+        
+        // ============================================
+        // MODALES DE SAISIE
+        // ============================================
+        
+        function ouvrirModalNouvelleNote() {
+            const modalHtml = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">📝 Nouvelle note</div>
+                        <button class="modal-close" onclick="fermerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formNouvelleNote">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Élève *</label>
+                                    <select class="form-control" id="noteEleve" required>
+                                        <option value="">Sélectionner un élève</option>
+                                        ${SCOLARIS_DATA.eleves.map(eleve => {
+                                            const classe = SCOLARIS_DATA.classes.find(c => c.id === eleve.classe_id);
+                                            return `<option value="${eleve.id}">${eleve.nom} ${eleve.prenom} - ${classe ? classe.nom : 'Non affecté'}</option>`;
+                                        }).join('')}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Matière *</label>
+                                    <select class="form-control" id="noteMatiere" required>
+                                        <option value="">Sélectionner une matière</option>
+                                        ${SCOLARIS_DATA.matieres.map(matiere => 
+                                            `<option value="${matiere.id}">${matiere.nom}</option>`
+                                        ).join('')}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Note (sur 20) *</label>
+                                    <input type="number" class="form-control" id="noteValeur" 
+                                           min="0" max="20" step="0.5" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Coefficient</label>
+                                    <input type="number" class="form-control" id="noteCoefficient" 
+                                           value="1" min="1" max="10">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Type d'évaluation</label>
+                                    <select class="form-control" id="noteType">
+                                        <option value="devoir">Devoir</option>
+                                        <option value="interrogation">Interrogation</option>
+                                        <option value="examen">Examen</option>
+                                        <option value="participation">Participation</option>
+                                        <option value="oral">Oral</option>
+                                        <option value="pratique">Pratique</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Date</label>
+                                    <input type="date" class="form-control" id="noteDate" 
+                                           value="${new Date().toISOString().split('T')[0]}">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group" style="flex: 2;">
+                                    <label>Commentaire</label>
+                                    <textarea class="form-control" id="noteCommentaire" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="fermerModal()">Annuler</button>
+                        <button class="btn btn-primary" onclick="creerNouvelleNote()">
+                            <i class="fas fa-save"></i> Enregistrer la note
+                        </button>
+                    </div>
+                </div>
+            `;
+            ouvrirModal(modalHtml);
+        }
+        
+        function creerNouvelleNote() {
+            const eleveId = document.getElementById('noteEleve').value;
+            const matiereId = document.getElementById('noteMatiere').value;
+            const valeur = parseFloat(document.getElementById('noteValeur').value);
+            const coefficient = parseInt(document.getElementById('noteCoefficient').value) || 1;
+            const type = document.getElementById('noteType').value;
+            const date = document.getElementById('noteDate').value || new Date().toISOString().split('T')[0];
+            const commentaire = document.getElementById('noteCommentaire').value;
+            
+            if (!eleveId || !matiereId || isNaN(valeur)) {
+                alert('Veuillez remplir tous les champs obligatoires');
+                return;
+            }
+            
+            if (valeur < 0 || valeur > 20) {
+                alert('La note doit être comprise entre 0 et 20');
+                return;
+            }
+            
+            const nouvelId = Math.max(...SCOLARIS_DATA.notes.map(n => n.id), 0) + 1;
+            const nouvelleNote = {
+                id: nouvelId,
+                eleve_id: parseInt(eleveId),
+                matiere_id: parseInt(matiereId),
+                valeur: valeur,
+                coefficient: coefficient,
+                type: type,
+                date: date,
+                commentaire: commentaire,
+                created_at: new Date().toISOString()
+            };
+            
+            SCOLARIS_DATA.notes.push(nouvelleNote);
+            sauvegarderDonnees();
+            alert('Note enregistrée avec succès !');
+            fermerModal();
+            afficherCarnetComplet();
+        }
+        
+        function ouvrirModalNouvelleObservation() {
+            const modalHtml = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">📋 Nouvelle observation</div>
+                        <button class="modal-close" onclick="fermerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formNouvelleObservation">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Élève concerné *</label>
+                                    <select class="form-control" id="observationEleve" required>
+                                        <option value="">Sélectionner un élève</option>
+                                        ${SCOLARIS_DATA.eleves.map(eleve => {
+                                            const classe = SCOLARIS_DATA.classes.find(c => c.id === eleve.classe_id);
+                                            return `<option value="${eleve.id}">${eleve.nom} ${eleve.prenom} - ${classe ? classe.nom : 'Non affecté'}</option>`;
+                                        }).join('')}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Type d'observation *</label>
+                                    <select class="form-control" id="observationType" required>
+                                        <option value="positif">👍 Positif</option>
+                                        <option value="negatif">👎 Négatif</option>
+                                        <option value="comportement">😐 Comportement</option>
+                                        <option value="travail">📚 Travail</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Date</label>
+                                    <input type="date" class="form-control" id="observationDate" 
+                                           value="${new Date().toISOString().split('T')[0]}">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group" style="flex: 2;">
+                                    <label>Contenu de l'observation *</label>
+                                    <textarea class="form-control" id="observationContenu" rows="5" required
+                                              placeholder="Décrivez l'observation..."></textarea>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="fermerModal()">Annuler</button>
+                        <button class="btn btn-primary" onclick="creerNouvelleObservation()">
+                            <i class="fas fa-save"></i> Enregistrer l'observation
+                        </button>
+                    </div>
+                </div>
+            `;
+            ouvrirModal(modalHtml);
+        }
+        
+        function creerNouvelleObservation() {
+            const eleveId = document.getElementById('observationEleve').value;
+            const type = document.getElementById('observationType').value;
+            const date = document.getElementById('observationDate').value || new Date().toISOString().split('T')[0];
+            const contenu = document.getElementById('observationContenu').value;
+            
+            if (!eleveId || !contenu) {
+                alert('Veuillez remplir tous les champs obligatoires');
+                return;
+            }
+            
+            const nouvelId = Math.max(...SCOLARIS_DATA.observations.map(o => o.id), 0) + 1;
+            const nouvelleObservation = {
+                id: nouvelId,
+                eleve_id: parseInt(eleveId),
+                type: type,
+                date: date,
+                contenu: contenu,
+                enseignant_id: utilisateurCourant.id,
+                created_at: new Date().toISOString()
+            };
+            
+            SCOLARIS_DATA.observations.push(nouvelleObservation);
+            sauvegarderDonnees();
+            alert('Observation enregistrée avec succès !');
+            fermerModal();
+            afficherCarnetComplet();
+        }
+        
+        function ouvrirModalNouvelleExclusion() {
+            const modalHtml = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">⚖️ Nouvelle sanction</div>
+                        <button class="modal-close" onclick="fermerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formNouvelleExclusion">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Élève sanctionné *</label>
+                                    <select class="form-control" id="exclusionEleve" required>
+                                        <option value="">Sélectionner un élève</option>
+                                        ${SCOLARIS_DATA.eleves.map(eleve => {
+                                            const classe = SCOLARIS_DATA.classes.find(c => c.id === eleve.classe_id);
+                                            return `<option value="${eleve.id}">${eleve.nom} ${eleve.prenom} - ${classe ? classe.nom : 'Non affecté'}</option>`;
+                                        }).join('')}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Type de sanction *</label>
+                                    <select class="form-control" id="exclusionType" required>
+                                        <option value="avertissement">Avertissement</option>
+                                        <option value="retenue">Retenue</option>
+                                        <option value="exclusion_cours">Exclusion de cours</option>
+                                        <option value="exclusion_temporaire">Exclusion temporaire</option>
+                                        <option value="exclusion_definitive">Exclusion définitive</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Date début *</label>
+                                    <input type="date" class="form-control" id="exclusionDateDebut" 
+                                           value="${new Date().toISOString().split('T')[0]}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Date fin</label>
+                                    <input type="date" class="form-control" id="exclusionDateFin">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Durée</label>
+                                    <input type="text" class="form-control" id="exclusionDuree" 
+                                           placeholder="Ex: 1 journée, 2 heures...">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group" style="flex: 2;">
+                                    <label>Motif de la sanction *</label>
+                                    <textarea class="form-control" id="exclusionMotif" rows="4" required
+                                              placeholder="Décrivez les faits et le motif de la sanction..."></textarea>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="fermerModal()">Annuler</button>
+                        <button class="btn btn-danger" onclick="creerNouvelleExclusion()">
+                            <i class="fas fa-gavel"></i> Appliquer la sanction
+                        </button>
+                    </div>
+                </div>
+            `;
+            ouvrirModal(modalHtml);
+        }
+        
+        function creerNouvelleExclusion() {
+            const eleveId = document.getElementById('exclusionEleve').value;
+            const type = document.getElementById('exclusionType').value;
+            const dateDebut = document.getElementById('exclusionDateDebut').value;
+            const dateFin = document.getElementById('exclusionDateFin').value;
+            const duree = document.getElementById('exclusionDuree').value;
+            const motif = document.getElementById('exclusionMotif').value;
+            
+            if (!eleveId || !type || !dateDebut || !motif) {
+                alert('Veuillez remplir tous les champs obligatoires');
+                return;
+            }
+            
+            const nouvelId = Math.max(...SCOLARIS_DATA.exclusions.map(e => e.id), 0) + 1;
+            const nouvelleExclusion = {
+                id: nouvelId,
+                eleve_id: parseInt(eleveId),
+                type: type,
+                date_debut: dateDebut,
+                date_fin: dateFin || null,
+                duree: duree,
+                motif: motif,
+                appliquee_par: utilisateurCourant.id,
+                created_at: new Date().toISOString()
+            };
+            
+            SCOLARIS_DATA.exclusions.push(nouvelleExclusion);
+            sauvegarderDonnees();
+            alert('Sanction enregistrée avec succès !');
+            fermerModal();
+            afficherCarnetComplet();
+        }
+        
+        function ouvrirModalNouvelleAbsence() {
+            const modalHtml = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">⏰ Nouvelle absence</div>
+                        <button class="modal-close" onclick="fermerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formNouvelleAbsence">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Élève absent *</label>
+                                    <select class="form-control" id="absenceEleve" required>
+                                        <option value="">Sélectionner un élève</option>
+                                        ${SCOLARIS_DATA.eleves.map(eleve => {
+                                            const classe = SCOLARIS_DATA.classes.find(c => c.id === eleve.classe_id);
+                                            return `<option value="${eleve.id}">${eleve.nom} ${eleve.prenom} - ${classe ? classe.nom : 'Non affecté'}</option>`;
+                                        }).join('')}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Type d'absence</label>
+                                    <select class="form-control" id="absenceType">
+                                        <option value="maladie">Maladie</option>
+                                        <option value="familiale">Raison familiale</option>
+                                        <option value="exceptionnelle">Exceptionnelle</option>
+                                        <option value="injustifiee">Injustifiée</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Date *</label>
+                                    <input type="date" class="form-control" id="absenceDate" 
+                                           value="${new Date().toISOString().split('T')[0]}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Justifiée</label>
+                                    <select class="form-control" id="absenceJustifiee">
+                                        <option value="true">Oui</option>
+                                        <option value="false">Non</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group" style="flex: 2;">
+                                    <label>Motif</label>
+                                    <textarea class="form-control" id="absenceMotif" rows="3"
+                                              placeholder="Précisez le motif de l'absence..."></textarea>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="fermerModal()">Annuler</button>
+                        <button class="btn btn-primary" onclick="creerNouvelleAbsence()">
+                            <i class="fas fa-save"></i> Enregistrer l'absence
+                        </button>
+                    </div>
+                </div>
+            `;
+            ouvrirModal(modalHtml);
+        }
+        
+        function creerNouvelleAbsence() {
+            const eleveId = document.getElementById('absenceEleve').value;
+            const type = document.getElementById('absenceType').value;
+            const date = document.getElementById('absenceDate').value;
+            const justifiee = document.getElementById('absenceJustifiee').value === 'true';
+            const motif = document.getElementById('absenceMotif').value;
+            
+            if (!eleveId || !date) {
+                alert('Veuillez remplir tous les champs obligatoires');
+                return;
+            }
+            
+            const nouvelId = Math.max(...SCOLARIS_DATA.absences.map(a => a.id), 0) + 1;
+            const nouvelleAbsence = {
+                id: nouvelId,
+                eleve_id: parseInt(eleveId),
+                type: type,
+                date: date,
+                justifiee: justifiee,
+                motif: motif,
+                declaree_par: utilisateurCourant.id,
+                created_at: new Date().toISOString()
+            };
+            
+            SCOLARIS_DATA.absences.push(nouvelleAbsence);
+            sauvegarderDonnees();
+            alert('Absence enregistrée avec succès !');
+            fermerModal();
+            afficherCarnetComplet();
+        }
+        
+        // ============================================
+        // GESTION DES UTILISATEURS
+        // ============================================
+        
+        function afficherGestionUtilisateurs() {
+            currentView = 'utilisateurs';
+            document.getElementById('contenuPrincipal').innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h1 style="color: var(--couleur-principale);">Gestion des utilisateurs</h1>
+                    <button class="btn btn-primary" onclick="ouvrirModalNouvelUtilisateur()">
+                        <i class="fas fa-user-plus"></i> Nouvel utilisateur
+                    </button>
+                </div>
+                
+                <div class="table-container">
+                    <div class="table-header">
+                        <div class="table-title">Liste des utilisateurs (${SCOLARIS_DATA.utilisateurs.length})</div>
+                        <button class="btn btn-secondary btn-small" onclick="exporterUtilisateurs()">
+                            <i class="fas fa-file-export"></i> Exporter
+                        </button>
+                    </div>
+                    <div class="table-content">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nom</th>
+                                    <th>Prénom</th>
+                                    <th>Rôle</th>
+                                    <th>Identifiant</th>
+                                    <th>Email</th>
+                                    <th>Date création</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${SCOLARIS_DATA.utilisateurs.map(utilisateur => {
+                                    const role = SCOLARIS_DATA.roles.find(r => r.id === utilisateur.role);
+                                    return `
+                                        <tr>
+                                            <td>${utilisateur.id}</td>
+                                            <td>${utilisateur.nom}</td>
+                                            <td>${utilisateur.prenom}</td>
+                                            <td>${role ? role.nom : utilisateur.role}</td>
+                                            <td>${utilisateur.identifiant}</td>
+                                            <td>${utilisateur.email || ''}</td>
+                                            <td>${formatDate(utilisateur.date_creation)}</td>
+                                            <td>${utilisateur.actif ? 
+                                                '<span class="badge badge-success">Actif</span>' : 
+                                                '<span class="badge badge-danger">Inactif</span>'}</td>
+                                            <td>
+                                                <div style="display: flex; gap: 5px;">
+                                                    <button class="btn btn-secondary btn-small" onclick="modifierUtilisateur(${utilisateur.id})">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    ${utilisateur.id !== 1 ? `
+                                                    <button class="btn btn-danger btn-small" onclick="supprimerUtilisateur(${utilisateur.id})">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>` : ''}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            setActiveMenu('utilisateurs');
+        }
+        
+        function ouvrirModalNouvelUtilisateur() {
+            const modalHtml = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">👤 Nouvel utilisateur</div>
+                        <button class="modal-close" onclick="fermerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formNouvelUtilisateur">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Nom *</label>
+                                    <input type="text" class="form-control" id="nouveauNom" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Prénom *</label>
+                                    <input type="text" class="form-control" id="nouveauPrenom" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Rôle *</label>
+                                    <select class="form-control" id="nouveauRole" required>
+                                        <option value="">Sélectionner un rôle</option>
+                                        ${SCOLARIS_DATA.roles.map(role => 
+                                            `<option value="${role.id}">${role.nom}</option>`
+                                        ).join('')}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Identifiant *</label>
+                                    <input type="text" class="form-control" id="nouveauIdentifiant" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Mot de passe *</label>
+                                    <input type="password" class="form-control" id="nouveauPassword" 
+                                           value="scolaris2025" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Confirmer le mot de passe *</label>
+                                    <input type="password" class="form-control" id="nouveauPasswordConfirm" 
+                                           value="scolaris2025" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Email</label>
+                                    <input type="email" class="form-control" id="nouveauEmail">
+                                </div>
+                                <div class="form-group">
+                                    <label>Téléphone</label>
+                                    <input type="tel" class="form-control" id="nouveauTelephone">
+                                </div>
+                            </div>
+                            
+                            <div id="champsEnseignant" style="display: none;">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Matières enseignées</label>
+                                        <select class="form-control" id="nouveauMatieres" multiple style="height: 100px;">
+                                            ${SCOLARIS_DATA.matieres.map(matiere => 
+                                                `<option value="${matiere.id}">${matiere.nom}</option>`
+                                            ).join('')}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="fermerModal()">Annuler</button>
+                        <button class="btn btn-primary" onclick="creerNouvelUtilisateur()">
+                            <i class="fas fa-save"></i> Créer l'utilisateur
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            ouvrirModal(modalHtml);
+            
+            // Afficher/masquer les champs spécifiques selon le rôle
+            document.getElementById('nouveauRole').addEventListener('change', function() {
+                const champsEnseignant = document.getElementById('champsEnseignant');
+                if (this.value === 'enseignant') {
+                    champsEnseignant.style.display = 'block';
+                } else {
+                    champsEnseignant.style.display = 'none';
+                }
+            });
+        }
+        
+        function creerNouvelUtilisateur() {
+            const nom = document.getElementById('nouveauNom').value;
+            const prenom = document.getElementById('nouveauPrenom').value;
+            const role = document.getElementById('nouveauRole').value;
+            const identifiant = document.getElementById('nouveauIdentifiant').value;
+            const password = document.getElementById('nouveauPassword').value;
+            const passwordConfirm = document.getElementById('nouveauPasswordConfirm').value;
+            const email = document.getElementById('nouveauEmail').value;
+            const telephone = document.getElementById('nouveauTelephone').value;
+            
+            // Validation
+            if (!nom || !prenom || !role || !identifiant || !password) {
+                alert('Veuillez remplir tous les champs obligatoires (*)');
+                return;
+            }
+            
+            if (password !== passwordConfirm) {
+                alert('Les mots de passe ne correspondent pas');
+                return;
+            }
+            
+            // Vérifier si l'identifiant existe déjà
+            if (SCOLARIS_DATA.utilisateurs.find(u => u.identifiant === identifiant)) {
+                alert('Cet identifiant est déjà utilisé');
+                return;
+            }
+            
+            // Créer le nouvel utilisateur
+            const nouvelId = Math.max(...SCOLARIS_DATA.utilisateurs.map(u => u.id), 0) + 1;
+            const nouvelUtilisateur = {
+                id: nouvelId,
+                nom: nom,
+                prenom: prenom,
+                role: role,
+                identifiant: identifiant,
+                password: password,
+                email: email,
+                telephone: telephone,
+                date_creation: new Date().toISOString().split('T')[0],
+                actif: true
+            };
+            
+            // Ajouter les matières pour les enseignants
+            if (role === 'enseignant') {
+                const matieresSelect = document.getElementById('nouveauMatieres');
+                const matieresSelectionnees = Array.from(matieresSelect.selectedOptions).map(opt => parseInt(opt.value));
+                nouvelUtilisateur.matieres = matieresSelectionnees;
+                nouvelUtilisateur.classes = []; // Classes vides au départ
+            }
+            
+            // Ajouter l'ID élève pour les comptes élèves
+            if (role === 'eleve') {
+                // On cherche si un élève existe avec ce nom/prénom
+                const eleveExistants = SCOLARIS_DATA.eleves.filter(e => 
+                    e.nom.toLowerCase() === nom.toLowerCase() && 
+                    e.prenom.toLowerCase() === prenom.toLowerCase()
+                );
+                if (eleveExistants.length > 0) {
+                    nouvelUtilisateur.eleve_id = eleveExistants[0].id;
+                }
+            }
+            
+            SCOLARIS_DATA.utilisateurs.push(nouvelUtilisateur);
+            sauvegarderDonnees();
+            
+            alert(`Utilisateur créé avec succès !\n\nIdentifiant: ${identifiant}\nMot de passe: ${password}`);
+            fermerModal();
+            afficherGestionUtilisateurs();
+        }
+        
+        function modifierUtilisateur(utilisateurId) {
+            const utilisateur = SCOLARIS_DATA.utilisateurs.find(u => u.id === utilisateurId);
+            if (!utilisateur) return;
+            
+            const modalHtml = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">✏️ Modifier l'utilisateur</div>
+                        <button class="modal-close" onclick="fermerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formModifierUtilisateur">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Nom *</label>
+                                    <input type="text" class="form-control" id="modifNom" value="${utilisateur.nom}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Prénom *</label>
+                                    <input type="text" class="form-control" id="modifPrenom" value="${utilisateur.prenom}" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Rôle *</label>
+                                    <select class="form-control" id="modifRole" required>
+                                        ${SCOLARIS_DATA.roles.map(role => 
+                                            `<option value="${role.id}" ${utilisateur.role === role.id ? 'selected' : ''}>
+                                                ${role.nom}
+                                            </option>`
+                                        ).join('')}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Identifiant *</label>
+                                    <input type="text" class="form-control" id="modifIdentifiant" 
+                                           value="${utilisateur.identifiant}" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Nouveau mot de passe</label>
+                                    <input type="password" class="form-control" id="modifPassword" 
+                                           placeholder="Laisser vide pour ne pas changer">
+                                </div>
+                                <div class="form-group">
+                                    <label>Email</label>
+                                    <input type="email" class="form-control" id="modifEmail" 
+                                           value="${utilisateur.email || ''}">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Téléphone</label>
+                                    <input type="tel" class="form-control" id="modifTelephone" 
+                                           value="${utilisateur.telephone || ''}">
+                                </div>
+                                <div class="form-group">
+                                    <label>Statut</label>
+                                    <select class="form-control" id="modifStatut">
+                                        <option value="true" ${utilisateur.actif ? 'selected' : ''}>Actif</option>
+                                        <option value="false" ${!utilisateur.actif ? 'selected' : ''}>Inactif</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            ${utilisateur.role === 'enseignant' ? `
+                            <div id="champsEnseignantModif">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Matières enseignées</label>
+                                        <select class="form-control" id="modifMatieres" multiple style="height: 100px;">
+                                            ${SCOLARIS_DATA.matieres.map(matiere => 
+                                                `<option value="${matiere.id}" 
+                                                    ${utilisateur.matieres && utilisateur.matieres.includes(matiere.id) ? 'selected' : ''}>
+                                                    ${matiere.nom}
+                                                </option>`
+                                            ).join('')}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>` : ''}
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="fermerModal()">Annuler</button>
+                        <button class="btn btn-primary" onclick="sauvegarderModificationUtilisateur(${utilisateurId})">
+                            <i class="fas fa-save"></i> Enregistrer
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            ouvrirModal(modalHtml);
+        }
+        
+        function sauvegarderModificationUtilisateur(utilisateurId) {
+            const utilisateurIndex = SCOLARIS_DATA.utilisateurs.findIndex(u => u.id === utilisateurId);
+            if (utilisateurIndex === -1) return;
+            
+            const utilisateur = SCOLARIS_DATA.utilisateurs[utilisateurIndex];
+            
+            // Mettre à jour les informations
+            utilisateur.nom = document.getElementById('modifNom').value;
+            utilisateur.prenom = document.getElementById('modifPrenom').value;
+            utilisateur.role = document.getElementById('modifRole').value;
+            utilisateur.identifiant = document.getElementById('modifIdentifiant').value;
+            utilisateur.email = document.getElementById('modifEmail').value;
+            utilisateur.telephone = document.getElementById('modifTelephone').value;
+            utilisateur.actif = document.getElementById('modifStatut').value === 'true';
+            
+            // Mettre à jour le mot de passe si fourni
+            const nouveauPassword = document.getElementById('modifPassword').value;
+            if (nouveauPassword) {
+                utilisateur.password = nouveauPassword;
+            }
+            
+            // Mettre à jour les matières pour les enseignants
+            if (utilisateur.role === 'enseignant') {
+                const matieresSelect = document.getElementById('modifMatieres');
+                if (matieresSelect) {
+                    const matieresSelectionnees = Array.from(matieresSelect.selectedOptions).map(opt => parseInt(opt.value));
+                    utilisateur.matieres = matieresSelectionnees;
+                }
+            }
+            
+            sauvegarderDonnees();
+            alert('Utilisateur modifié avec succès !');
+            fermerModal();
+            afficherGestionUtilisateurs();
+        }
+        
+        function supprimerUtilisateur(utilisateurId) {
+            if (utilisateurId === 1) {
+                alert('Impossible de supprimer l\'administrateur principal');
+                return;
+            }
+            
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible.')) {
+                return;
+            }
+            
+            SCOLARIS_DATA.utilisateurs = SCOLARIS_DATA.utilisateurs.filter(u => u.id !== utilisateurId);
+            sauvegarderDonnees();
+            alert('Utilisateur supprimé avec succès !');
+            afficherGestionUtilisateurs();
+        }
+        
+        // ============================================
+        // GESTION DES ÉLÈVES
+        // ============================================
+        
+        function afficherGestionEleves() {
+            currentView = 'eleves';
+            document.getElementById('contenuPrincipal').innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h1 style="color: var(--couleur-principale);">Gestion des élèves</h1>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-primary" onclick="ouvrirModalNouvelEleve()">
+                            <i class="fas fa-user-plus"></i> Nouvel élève
+                        </button>
+                        <button class="btn btn-secondary" onclick="importerEleves()">
+                            <i class="fas fa-file-import"></i> Importer
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-row" style="margin-bottom: 20px;">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Rechercher un élève..." 
+                               onkeyup="rechercherEleves(this.value)">
+                    </div>
+                    <div class="form-group" style="width: 200px;">
+                        <select class="form-control" onchange="filtrerElevesParClasse(this.value)">
+                            <option value="">Toutes les classes</option>
+                            ${SCOLARIS_DATA.classes.map(classe => 
+                                `<option value="${classe.id}">${classe.nom}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <div class="table-header">
+                        <div class="table-title">Élèves inscrits (${SCOLARIS_DATA.eleves.length})</div>
+                        <button class="btn btn-secondary btn-small" onclick="exporterEleves()">
+                            <i class="fas fa-file-export"></i> Exporter
+                        </button>
+                    </div>
+                    <div class="table-content">
+                        <table id="tableEleves">
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Prénom</th>
+                                    <th>Classe</th>
+                                    <th>Date de naissance</th>
+                                    <th>Responsable</th>
+                                    <th>Téléphone</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${SCOLARIS_DATA.eleves.map(eleve => {
+                                    const classe = SCOLARIS_DATA.classes.find(c => c.id === eleve.classe_id);
+                                    return `
+                                        <tr data-eleve-id="${eleve.id}">
+                                            <td><strong>${eleve.nom}</strong></td>
+                                            <td>${eleve.prenom}</td>
+                                            <td>${classe ? classe.nom : 'Non affecté'}</td>
+                                            <td>${formatDate(eleve.date_naissance)}</td>
+                                            <td>${eleve.responsable_1 || ''}</td>
+                                            <td>${eleve.tel_responsable_1 || ''}</td>
+                                            <td>
+                                                ${eleve.statut === 'inscrit' ? 
+                                                    '<span class="badge badge-success">Inscrit</span>' : 
+                                                    eleve.statut === 'radie' ? 
+                                                    '<span class="badge badge-danger">Radié</span>' : 
+                                                    '<span class="badge badge-warning">Autre</span>'}
+                                            </td>
+                                            <td>
+                                                <div style="display: flex; gap: 5px;">
+                                                    <button class="btn btn-secondary btn-small" onclick="voirFicheEleve(${eleve.id})">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    <button class="btn btn-secondary btn-small" onclick="modifierEleve(${eleve.id})">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button class="btn btn-danger btn-small" onclick="supprimerEleve(${eleve.id})">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                ${SCOLARIS_DATA.eleves.length === 0 ? `
+                <div class="form-container" style="text-align: center; padding: 40px;">
+                    <i class="fas fa-user-graduate" style="font-size: 3rem; color: #ddd; margin-bottom: 20px;"></i>
+                    <h3 style="color: #666; margin-bottom: 15px;">Aucun élève enregistré</h3>
+                    <p style="color: #888; margin-bottom: 25px;">Commencez par inscrire vos premiers élèves.</p>
+                    <button class="btn btn-primary" onclick="ouvrirModalNouvelEleve()">
+                        <i class="fas fa-user-plus"></i> Inscrire le premier élève
+                    </button>
+                </div>` : ''}
+            `;
+            setActiveMenu('eleves');
+        }
+        
+        function ouvrirModalNouvelEleve() {
+            const modalHtml = `
+                <div class="modal-content" style="max-width: 800px;">
+                    <div class="modal-header">
+                        <div class="modal-title">👤 Inscrire un nouvel élève</div>
+                        <button class="modal-close" onclick="fermerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formNouvelEleve">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Nom *</label>
+                                    <input type="text" class="form-control" id="eleveNom" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Prénom *</label>
+                                    <input type="text" class="form-control" id="elevePrenom" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Date de naissance *</label>
+                                    <input type="date" class="form-control" id="eleveNaissance" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Classe *</label>
+                                    <select class="form-control" id="eleveClasse" required>
+                                        <option value="">Sélectionner une classe</option>
+                                        ${SCOLARIS_DATA.classes.map(classe => 
+                                            `<option value="${classe.id}">${classe.nom}</option>`
+                                        ).join('')}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <h4 style="color: var(--couleur-principale); margin: 25px 0 15px 0;">Responsable légal 1</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Nom du responsable *</label>
+                                    <input type="text" class="form-control" id="eleveResponsable1" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Téléphone *</label>
+                                    <input type="tel" class="form-control" id="eleveTel1" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Email</label>
+                                    <input type="email" class="form-control" id="eleveEmail1">
+                                </div>
+                                <div class="form-group">
+                                    <label>Lien de parenté</label>
+                                    <select class="form-control" id="eleveParente1">
+                                        <option value="Mère">Mère</option>
+                                        <option value="Père">Père</option>
+                                        <option value="Tuteur">Tuteur</option>
+                                        <option value="Autre">Autre</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <h4 style="color: var(--couleur-principale); margin: 25px 0 15px 0;">Informations complémentaires</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Adresse</label>
+                                    <input type="text" class="form-control" id="eleveAdresse">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Code postal</label>
+                                    <input type="text" class="form-control" id="eleveCP">
+                                </div>
+                                <div class="form-group">
+                                    <label>Ville</label>
+                                    <input type="text" class="form-control" id="eleveVille">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Informations médicales</label>
+                                    <textarea class="form-control" id="eleveMedical" rows="3" 
+                                              placeholder="Allergies, traitements..."></textarea>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="fermerModal()">Annuler</button>
+                        <button class="btn btn-primary" onclick="creerNouvelEleve()">
+                            <i class="fas fa-save"></i> Inscrire l'élève
+                        </button>
+                    </div>
+                </div>
+            `;
+            ouvrirModal(modalHtml);
+        }
+        
+        function creerNouvelEleve() {
+            const nom = document.getElementById('eleveNom').value;
+            const prenom = document.getElementById('elevePrenom').value;
+            const naissance = document.getElementById('eleveNaissance').value;
+            const classeId = document.getElementById('eleveClasse').value;
+            const responsable1 = document.getElementById('eleveResponsable1').value;
+            const tel1 = document.getElementById('eleveTel1').value;
+            
+            if (!nom || !prenom || !naissance || !classeId || !responsable1 || !tel1) {
+                alert('Veuillez remplir tous les champs obligatoires (*)');
+                return;
+            }
+            
+            const classe = SCOLARIS_DATA.classes.find(c => c.id === classeId);
+            if (!classe) {
+                alert('Classe sélectionnée invalide');
+                return;
+            }
+            
+            const nouvelId = Math.max(...SCOLARIS_DATA.eleves.map(e => e.id), 0) + 1;
+            const nouvelEleve = {
+                id: nouvelId,
+                nom: nom,
+                prenom: prenom,
+                classe: classe.nom,
+                classe_id: classeId,
+                date_naissance: naissance,
+                responsable_1: responsable1,
+                tel_responsable_1: tel1,
+                email_responsable_1: document.getElementById('eleveEmail1').value,
+                parente_responsable_1: document.getElementById('eleveParente1').value,
+                responsable_2: document.getElementById('eleveResponsable2')?.value,
+                tel_responsable_2: document.getElementById('eleveTel2')?.value,
+                adresse: document.getElementById('eleveAdresse')?.value,
+                code_postal: document.getElementById('eleveCP')?.value,
+                ville: document.getElementById('eleveVille')?.value,
+                informations_medicales: document.getElementById('eleveMedical')?.value,
+                date_inscription: new Date().toISOString().split('T')[0],
+                statut: 'inscrit'
+            };
+            
+            SCOLARIS_DATA.eleves.push(nouvelEleve);
+            sauvegarderDonnees();
+            
+            // Créer automatiquement un compte élève
+            const nouvelUtilisateurId = Math.max(...SCOLARIS_DATA.utilisateurs.map(u => u.id), 0) + 1;
+            const nouvelUtilisateur = {
+                id: nouvelUtilisateurId,
+                nom: nom,
+                prenom: prenom,
+                role: 'eleve',
+                identifiant: \`\${prenom.toLowerCase()}.\${nom.toLowerCase().substring(0, 3)}\`,
+                password: 'eleve123',
+                email: \`\${prenom.toLowerCase()}.\${nom.toLowerCase()}@edu.\${SCOLARIS_DATA.system.etablissement.nom.toLowerCase().replace(/\\s+/g, '')}.fr\`,
+                date_creation: new Date().toISOString().split('T')[0],
+                actif: true,
+                eleve_id: nouvelId
+            };
+            
+            SCOLARIS_DATA.utilisateurs.push(nouvelUtilisateur);
+            sauvegarderDonnees();
+            
+            alert(\`Élève inscrit avec succès !\\n\\nUn compte a été créé automatiquement :\\nIdentifiant: \${nouvelUtilisateur.identifiant}\\nMot de passe: eleve123\`);
+            fermerModal();
+            afficherGestionEleves();
+        }
+        
+        function voirFicheEleve(eleveId) {
+            const eleve = SCOLARIS_DATA.eleves.find(e => e.id === eleveId);
+            if (!eleve) return;
+            
+            const classe = SCOLARIS_DATA.classes.find(c => c.id === eleve.classe_id);
+            const notesEleve = SCOLARIS_DATA.notes.filter(n => n.eleve_id === eleveId);
+            const absencesEleve = SCOLARIS_DATA.absences.filter(a => a.eleve_id === eleveId);
+            const observationsEleve = SCOLARIS_DATA.observations.filter(o => o.eleve_id === eleveId);
+            const exclusionsEleve = SCOLARIS_DATA.exclusions.filter(e => e.eleve_id === eleveId);
+            
+            // Calculer la moyenne
+            let moyenne = 0;
+            if (notesEleve.length > 0) {
+                const totalNotes = notesEleve.reduce((sum, note) => sum + (note.valeur * (note.coefficient || 1)), 0);
+                const totalCoefficients = notesEleve.reduce((sum, note) => sum + (note.coefficient || 1), 0);
+                moyenne = totalCoefficients > 0 ? totalNotes / totalCoefficients : 0;
+            }
+            
+            const modalHtml = `
+                <div class="modal-content" style="max-width: 900px;">
+                    <div class="modal-header">
+                        <div class="modal-title">📄 Fiche élève : ${eleve.nom} ${eleve.prenom}</div>
+                        <button class="modal-close" onclick="fermerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div style="display: flex; gap: 30px; margin-bottom: 25px;">
+                            <div style="flex: 1;">
+                                <h4 style="color: var(--couleur-principale); margin-bottom: 15px;">Identité</h4>
+                                <p><strong>Nom :</strong> ${eleve.nom}</p>
+                                <p><strong>Prénom :</strong> ${eleve.prenom}</p>
+                                <p><strong>Date de naissance :</strong> ${formatDate(eleve.date_naissance)}</p>
+                                <p><strong>Classe :</strong> ${classe ? classe.nom : 'Non affecté'}</p>
+                                <p><strong>Date d'inscription :</strong> ${formatDate(eleve.date_inscription)}</p>
+                                <p><strong>Statut :</strong> <span class="badge ${
+                                    eleve.statut === 'inscrit' ? 'badge-success' : 
+                                    eleve.statut === 'radie' ? 'badge-danger' : 'badge-warning'
+                                }">${eleve.statut || 'Inscrit'}</span></p>
+                            </div>
+                            <div style="flex: 1;">
+                                <h4 style="color: var(--couleur-principale); margin-bottom: 15px;">Responsables légaux</h4>
+                                <p><strong>Responsable 1 :</strong> ${eleve.responsable_1}</p>
+                                <p><strong>Téléphone :</strong> ${eleve.tel_responsable_1}</p>
+                                <p><strong>Email :</strong> ${eleve.email_responsable_1 || 'Non renseigné'}</p>
+                                ${eleve.responsable_2 ? `<p><strong>Responsable 2 :</strong> ${eleve.responsable_2}</p>` : ''}
+                                ${eleve.tel_responsable_2 ? `<p><strong>Téléphone 2 :</strong> ${eleve.tel_responsable_2}</p>` : ''}
+                            </div>
+                        </div>
+                        
+                        ${eleve.informations_medicales ? `
+                        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+                            <h4 style="color: var(--couleur-principale); margin-bottom: 10px;">Informations médicales</h4>
+                            <p>${eleve.informations_medicales}</p>
+                        </div>` : ''}
+                        
+                        <div style="display: flex; gap: 30px; margin-bottom: 20px;">
+                            <div>
+                                <h4 style="color: var(--couleur-principale); margin-bottom: 10px;">Scolarité</h4>
+                                <p><strong>Moyenne générale :</strong> <span style="font-size: 1.2rem; font-weight: bold;">
+                                    ${moyenne.toFixed(2)}/20
+                                </span></p>
+                                <p><strong>Notes enregistrées :</strong> ${notesEleve.length}</p>
+                                <p><strong>Absences cette année :</strong> ${absencesEleve.length}</p>
+                                <p><strong>Observations :</strong> ${observationsEleve.length}</p>
+                                <p><strong>Sanctions :</strong> ${exclusionsEleve.length}</p>
+                            </div>
+                            <div>
+                                <h4 style="color: var(--couleur-principale); margin-bottom: 10px;">Coordonnées</h4>
+                                <p><strong>Adresse :</strong> ${eleve.adresse || 'Non renseignée'}</p>
+                                <p><strong>Ville :</strong> ${eleve.ville || ''} ${eleve.code_postal || ''}</p>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 20px;">
+                            <h4 style="color: var(--couleur-principale); margin-bottom: 15px;">Actions</h4>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="btn btn-primary" onclick="genererFicheElevePDF(${eleveId})">
+                                    <i class="fas fa-print"></i> Imprimer la fiche
+                                </button>
+                                <button class="btn btn-secondary" onclick="modifierEleve(${eleveId}); fermerModal()">
+                                    <i class="fas fa-edit"></i> Modifier
+                                </button>
+                                <button class="btn btn-secondary" onclick="voirNotesEleve(${eleveId})">
+                                    <i class="fas fa-graduation-cap"></i> Voir les notes
+                                </button>
+                                <button class="btn btn-warning" onclick="ouvrirModalNouvelleObservation(); fermerModal()">
+                                    <i class="fas fa-comment-alt"></i> Ajouter observation
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="fermerModal()">Fermer</button>
+                    </div>
+                </div>
+            `;
+            ouvrirModal(modalHtml);
+        }
+        
+        function modifierEleve(eleveId) {
+            const eleve = SCOLARIS_DATA.eleves.find(e => e.id === eleveId);
+            if (!eleve) return;
+            
+            const modalHtml = `
+                <div class="modal-content" style="max-width: 800px;">
+                    <div class="modal-header">
+                        <div class="modal-title">✏️ Modifier l'élève</div>
+                        <button class="modal-close" onclick="fermerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formModifierEleve">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Nom *</label>
+                                    <input type="text" class="form-control" id="modifEleveNom" 
+                                           value="${eleve.nom}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Prénom *</label>
+                                    <input type="text" class="form-control" id="modifElevePrenom" 
+                                           value="${eleve.prenom}" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Date de naissance *</label>
+                                    <input type="date" class="form-control" id="modifEleveNaissance" 
+                                           value="${eleve.date_naissance}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Classe *</label>
+                                    <select class="form-control" id="modifEleveClasse" required>
+                                        ${SCOLARIS_DATA.classes.map(classe => 
+                                            `<option value="${classe.id}" ${eleve.classe_id === classe.id ? 'selected' : ''}>
+                                                ${classe.nom}
+                                            </option>`
+                                        ).join('')}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Statut</label>
+                                    <select class="form-control" id="modifEleveStatut">
+                                        <option value="inscrit" ${eleve.statut === 'inscrit' ? 'selected' : ''}>Inscrit</option>
+                                        <option value="radie" ${eleve.statut === 'radie' ? 'selected' : ''}>Radié</option>
+                                        <option value="exclu" ${eleve.statut === 'exclu' ? 'selected' : ''}>Exclu</option>
+                                        <option value="demenage" ${eleve.statut === 'demenage' ? 'selected' : ''}>Déménagé</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <h4 style="color: var(--couleur-principale); margin: 25px 0 15px 0;">Responsable légal 1</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Nom du responsable *</label>
+                                    <input type="text" class="form-control" id="modifEleveResponsable1" 
+                                           value="${eleve.responsable_1}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Téléphone *</label>
+                                    <input type="tel" class="form-control" id="modifEleveTel1" 
+                                           value="${eleve.tel_responsable_1}" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Email</label>
+                                    <input type="email" class="form-control" id="modifEleveEmail1" 
+                                           value="${eleve.email_responsable_1 || ''}">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="fermerModal()">Annuler</button>
+                        <button class="btn btn-primary" onclick="sauvegarderModificationEleve(${eleveId})">
+                            <i class="fas fa-save"></i> Enregistrer
+                        </button>
+                    </div>
+                </div>
+            `;
+            ouvrirModal(modalHtml);
+        }
+        
+        function sauvegarderModificationEleve(eleveId) {
+            const eleveIndex = SCOLARIS_DATA.eleves.findIndex(e => e.id === eleveId);
+            if (eleveIndex === -1) return;
+            
+            const eleve = SCOLARIS_DATA.eleves[eleveIndex];
+            const nouvelleClasseId = document.getElementById('modifEleveClasse').value;
+            const nouvelleClasse = SCOLARIS_DATA.classes.find(c => c.id === nouvelleClasseId);
+            
+            eleve.nom = document.getElementById('modifEleveNom').value;
+            eleve.prenom = document.getElementById('modifElevePrenom').value;
+            eleve.date_naissance = document.getElementById('modifEleveNaissance').value;
+            eleve.classe_id = nouvelleClasseId;
+            eleve.classe = nouvelleClasse ? nouvelleClasse.nom : eleve.classe;
+            eleve.statut = document.getElementById('modifEleveStatut').value;
+            eleve.responsable_1 = document.getElementById('modifEleveResponsable1').value;
+            eleve.tel_responsable_1 = document.getElementById('modifEleveTel1').value;
+            eleve.email_responsable_1 = document.getElementById('modifEleveEmail1').value;
+            
+            sauvegarderDonnees();
+            alert('Élève modifié avec succès !');
+            fermerModal();
+            afficherGestionEleves();
+        }
+        
+        function supprimerEleve(eleveId) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cet élève ? Cette action supprimera également toutes ses notes et absences.')) {
+                return;
+            }
+            
+            // Supprimer l'élève
+            SCOLARIS_DATA.eleves = SCOLARIS_DATA.eleves.filter(e => e.id !== eleveId);
+            
+            // Supprimer les notes de l'élève
+            SCOLARIS_DATA.notes = SCOLARIS_DATA.notes.filter(n => n.eleve_id !== eleveId);
+            
+            // Supprimer les observations de l'élève
+            SCOLARIS_DATA.observations = SCOLARIS_DATA.observations.filter(o => o.eleve_id !== eleveId);
+            
+            // Supprimer les exclusions de l'élève
+            SCOLARIS_DATA.exclusions = SCOLARIS_DATA.exclusions.filter(e => e.eleve_id !== eleveId);
+            
+            // Supprimer les absences de l'élève
+            SCOLARIS_DATA.absences = SCOLARIS_DATA.absences.filter(a => a.eleve_id !== eleveId);
+            
+            // Supprimer les retards de l'élève
+            SCOLARIS_DATA.retards = SCOLARIS_DATA.retards.filter(r => r.eleve_id !== eleveId);
+            
+            // Supprimer le compte utilisateur associé
+            SCOLARIS_DATA.utilisateurs = SCOLARIS_DATA.utilisateurs.filter(u => u.eleve_id !== eleveId);
+            
+            sauvegarderDonnees();
+            alert('Élève supprimé avec succès !');
+            afficherGestionEleves();
+        }
+        
+        // ============================================
+        // GESTION DES CLASSES
+        // ============================================
+        
+        function afficherGestionClasses() {
+            currentView = 'classes';
+            document.getElementById('contenuPrincipal').innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h1 style="color: var(--couleur-principale);">Gestion des classes</h1>
+                    <button class="btn btn-primary" onclick="ouvrirModalNouvelleClasse()">
+                        <i class="fas fa-plus"></i> Nouvelle classe
+                    </button>
+                </div>
+                
+                <div class="cards-container" style="margin-bottom: 30px;">
+                    <div class="card">
+                        <div class="card-title">Classes actives</div>
+                        <div class="card-value">${SCOLARIS_DATA.classes.length}</div>
+                        <div class="card-subtitle">Total de l'établissement</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Effectif total</div>
+                        <div class="card-value">${SCOLARIS_DATA.eleves.length}</div>
+                        <div class="card-subtitle">Élèves inscrits</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Moyenne par classe</div>
+                        <div class="card-value">${SCOLARIS_DATA.classes.length > 0 ? 
+                            Math.round(SCOLARIS_DATA.eleves.length / SCOLARIS_DATA.classes.length) : 0}</div>
+                        <div class="card-subtitle">Élèves par classe</div>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <div class="table-header">
+                        <div class="table-title">Liste des classes</div>
+                        <button class="btn btn-secondary btn-small" onclick="exporterClasses()">
+                            <i class="fas fa-file-export"></i> Exporter
+                        </button>
+                    </div>
+                    <div class="table-content">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Classe</th>
+                                    <th>Niveau</th>
+                                    <th>Professeur principal</th>
+                                    <th>Effectif</th>
+                                    <th>Salle</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${SCOLARIS_DATA.classes.map(classe => {
+                                    const effectif = SCOLARIS_DATA.eleves.filter(e => e.classe_id === classe.id).length;
+                                    const profPrincipal = classe.prof_principal_id ? 
+                                        SCOLARIS_DATA.utilisateurs.find(u => u.id === classe.prof_principal_id) : null;
+                                    return `
+                                        <tr>
+                                            <td><strong>${classe.nom}</strong></td>
+                                            <td>${classe.niveau}</td>
+                                            <td>${profPrincipal ? profPrincipal.prenom + ' ' + profPrincipal.nom : 'Non attribué'}</td>
+                                            <td>${effectif} / ${classe.effectif_max || 30}</td>
+                                            <td>${classe.salle || ''}</td>
+                                            <td>
+                                                <div style="display: flex; gap: 5px;">
+                                                    <button class="btn btn-secondary btn-small" onclick="voirDetailsClasse('${classe.id}')">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    <button class="btn btn-secondary btn-small" onclick="modifierClasse('${classe.id}')">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button class="btn btn-danger btn-small" onclick="supprimerClasse('${classe.id}')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                ${SCOLARIS_DATA.classes.length === 0 ? `
+                <div class="form-container" style="text-align: center; padding: 40px;">
+                    <i class="fas fa-users" style="font-size: 3rem; color: #ddd; margin-bottom: 20px;"></i>
+                    <h3 style="color: #666; margin-bottom: 15px;">Aucune classe créée</h3>
+                    <p style="color: #888; margin-bottom: 25px;">Commencez par créer vos premières classes.</p>
+                    <button class="btn btn-primary" onclick="ouvrirModalNouvelleClasse()">
+                        <i class="fas fa-plus"></i> Créer la première classe
+                    </button>
+                </div>` : ''}
+            `;
+            setActiveMenu('classes');
+        }
+        
+        function ouvrirModalNouvelleClasse() {
+            const modalHtml = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">🏫 Nouvelle classe</div>
+                        <button class="modal-close" onclick="fermerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formNouvelleClasse">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Nom de la classe *</label>
+                                    <input type="text" class="form-control" id="classeNom" 
+                                           placeholder="Ex: 6ème A" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Niveau *</label>
+                                    <select class="form-control" id="classeNiveau" required>
+                                        <option value="">Sélectionner</option>
+                                        <option value="6ème">6ème</option>
+                                        <option value="5ème">5ème</option>
+                                        <option value="4ème">4ème</option>
+                                        <option value="3ème">3ème</option>
+                                        <option value="2nde">2nde</option>
+                                        <option value="1ère">1ère</option>
+                                        <option value="Terminale">Terminale</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Professeur principal</label>
+                                    <select class="form-control" id="classeProfPrincipal">
+                                        <option value="">Non attribué</option>
+                                        ${SCOLARIS_DATA.utilisateurs
+                                            .filter(u => u.role === 'enseignant' && u.actif)
+                                            .map(prof => 
+                                                `<option value="${prof.id}">${prof.prenom} ${prof.nom}</option>`
+                                            ).join('')}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Effectif maximum</label>
+                                    <input type="number" class="form-control" id="classeEffectifMax" 
+                                           value="30" min="1" max="35">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Salle attribuée</label>
+                                    <input type="text" class="form-control" id="classeSalle" 
+                                           placeholder="Ex: Salle 201">
+                                </div>
+                                <div class="form-group">
+                                    <label>Heure de rentrée</label>
+                                    <input type="time" class="form-control" id="classeHeureRentree" 
+                                           value="08:30">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="fermerModal()">Annuler</button>
+                        <button class="btn btn-primary" onclick="creerNouvelleClasse()">
+                            <i class="fas fa-save"></i> Créer la classe
+                        </button>
+                    </div>
+                </div>
+            `;
+            ouvrirModal(modalHtml);
+        }
+        
+        function creerNouvelleClasse() {
+            const nom = document.getElementById('classeNom').value;
+            const niveau = document.getElementById('classeNiveau').value;
+            const profId = document.getElementById('classeProfPrincipal').value;
+            const effectifMax = parseInt(document.getElementById('classeEffectifMax').value);
+            const salle = document.getElementById('classeSalle').value;
+            const heureRentree = document.getElementById('classeHeureRentree').value;
+            
+            if (!nom || !niveau) {
+                alert('Veuillez remplir tous les champs obligatoires (*)');
+                return;
+            }
+            
+            // Vérifier si la classe existe déjà
+            if (SCOLARIS_DATA.classes.find(c => c.nom === nom)) {
+                alert('Une classe avec ce nom existe déjà');
+                return;
+            }
+            
+            const id = nom.replace(/\s+/g, '');
+            const profPrincipal = profId ? 
+                SCOLARIS_DATA.utilisateurs.find(u => u.id === parseInt(profId)) : null;
+            
+            const nouvelleClasse = {
+                id: id,
+                nom: nom,
+                niveau: niveau,
+                prof_principal_id: profId ? parseInt(profId) : null,
+                prof_principal: profPrincipal ? profPrincipal.prenom + ' ' + profPrincipal.nom : 'Non attribué',
+                effectif_max: effectifMax,
+                salle: salle,
+                heure_rentree: heureRentree,
+                created_at: new Date().toISOString().split('T')[0]
+            };
+            
+            SCOLARIS_DATA.classes.push(nouvelleClasse);
+            sauvegarderDonnees();
+            alert('Classe créée avec succès !');
+            fermerModal();
+            afficherGestionClasses();
+        }
+        
+        function voirDetailsClasse(classeId) {
+            const classe = SCOLARIS_DATA.classes.find(c => c.id === classeId);
+            if (!classe) return;
+            
+            const elevesClasse = SCOLARIS_DATA.eleves.filter(e => e.classe_id === classeId);
+            const profPrincipal = classe.prof_principal_id ? 
+                SCOLARIS_DATA.utilisateurs.find(u => u.id === classe.prof_principal_id) : null;
+            
+            const modalHtml = `
+                <div class="modal-content" style="max-width: 900px;">
+                    <div class="modal-header">
+                        <div class="modal-title">📊 Détails de la classe : ${classe.nom}</div>
+                        <button class="modal-close" onclick="fermerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div style="display: flex; gap: 30px; margin-bottom: 25px;">
+                            <div style="flex: 1;">
+                                <h4 style="color: var(--couleur-principale); margin-bottom: 15px;">Informations</h4>
+                                <p><strong>Niveau :</strong> ${classe.niveau}</p>
+                                <p><strong>Professeur principal :</strong> ${classe.prof_principal}</p>
+                                <p><strong>Salle :</strong> ${classe.salle || 'Non attribuée'}</p>
+                                <p><strong>Heure de rentrée :</strong> ${classe.heure_rentree || '08:30'}</p>
+                                <p><strong>Effectif :</strong> ${elevesClasse.length} / ${classe.effectif_max || 30} élèves</p>
+                            </div>
+                            <div style="flex: 1;">
+                                <h4 style="color: var(--couleur-principale); margin-bottom: 15px;">Statistiques</h4>
+                                <p><strong>Date de création :</strong> ${formatDate(classe.created_at)}</p>
+                            </div>
+                        </div>
+                        
+                        <h4 style="color: var(--couleur-principale); margin-bottom: 15px;">
+                            Liste des élèves (${elevesClasse.length})
+                        </h4>
+                        <div class="table-content" style="max-height: 300px; overflow-y: auto; margin-bottom: 20px;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Nom</th>
+                                        <th>Prénom</th>
+                                        <th>Date de naissance</th>
+                                        <th>Responsable</th>
+                                        <th>Téléphone</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${elevesClasse.map(eleve => `
+                                        <tr>
+                                            <td>${eleve.nom}</td>
+                                            <td>${eleve.prenom}</td>
+                                            <td>${formatDate(eleve.date_naissance)}</td>
+                                            <td>${eleve.responsable_1}</td>
+                                            <td>${eleve.tel_responsable_1}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div style="margin-top: 20px;">
+                            <h4 style="color: var(--couleur-principale); margin-bottom: 15px;">Actions</h4>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="btn btn-primary" onclick="genererListeClasse('${classeId}')">
+                                    <i class="fas fa-print"></i> Imprimer la liste
+                                </button>
+                                <button class="btn btn-secondary" onclick="modifierClasse('${classeId}'); fermerModal()">
+                                    <i class="fas fa-edit"></i> Modifier la classe
+                                </button>
+                                <button class="btn btn-secondary" onclick="affecterElevesClasse('${classeId}')">
+                                    <i class="fas fa-user-plus"></i> Affecter des élèves
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="fermerModal()">Fermer</button>
+                    </div>
+                </div>
+            `;
+            ouvrirModal(modalHtml);
+        }
+        
+        function modifierClasse(classeId) {
+            const classe = SCOLARIS_DATA.classes.find(c => c.id === classeId);
+            if (!classe) return;
+            
+            const modalHtml = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">✏️ Modifier la classe : ${classe.nom}</div>
+                        <button class="modal-close" onclick="fermerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formModifierClasse">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Nom de la classe *</label>
+                                    <input type="text" class="form-control" id="modifClasseNom" 
+                                           value="${classe.nom}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Niveau *</label>
+                                    <select class="form-control" id="modifClasseNiveau" required>
+                                        <option value="6ème" ${classe.niveau === '6ème' ? 'selected' : ''}>6ème</option>
+                                        <option value="5ème" ${classe.niveau === '5ème' ? 'selected' : ''}>5ème</option>
+                                        <option value="4ème" ${classe.niveau === '4ème' ? 'selected' : ''}>4ème</option>
+                                        <option value="3ème" ${classe.niveau === '3ème' ? 'selected' : ''}>3ème</option>
+                                        <option value="2nde" ${classe.niveau === '2nde' ? 'selected' : ''}>2nde</option>
+                                        <option value="1ère" ${classe.niveau === '1ère' ? 'selected' : ''}>1ère</option>
+                                        <option value="Terminale" ${classe.niveau === 'Terminale' ? 'selected' : ''}>Terminale</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Professeur principal</label>
+                                    <select class="form-control" id="modifClasseProfPrincipal">
+                                        <option value="">Non attribué</option>
+                                        ${SCOLARIS_DATA.utilisateurs
+                                            .filter(u => u.role === 'enseignant' && u.actif)
+                                            .map(prof => 
+                                                `<option value="${prof.id}" ${classe.prof_principal_id === prof.id ? 'selected' : ''}>
+                                                    ${prof.prenom} ${prof.nom}
+                                                </option>`
+                                            ).join('')}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Effectif maximum</label>
+                                    <input type="number" class="form-control" id="modifClasseEffectifMax"
+                                           value="${classe.effectif_max || 30}" min="1" max="35">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Salle attribuée</label>
+                                    <input type="text" class="form-control" id="modifClasseSalle" 
+                                           value="${classe.salle || ''}">
+                                </div>
+                                <div class="form-group">
+                                    <label>Heure de rentrée</label>
+                                    <input type="time" class="form-control" id="modifClasseHeureRentree"
+                                           value="${classe.heure_rentree || '08:30'}">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="fermerModal()">Annuler</button>
+                        <button class="btn btn-primary" onclick="sauvegarderModificationClasse('${classeId}')">
+                            <i class="fas fa-save"></i> Enregistrer
+                        </button>
+                    </div>
+                </div>
+            `;
+            ouvrirModal(modalHtml);
+        }
+        
+        function sauvegarderModificationClasse(classeId) {
+            const classeIndex = SCOLARIS_DATA.classes.findIndex(c => c.id === classeId);
+            if (classeIndex === -1) return;
+            
+            const classe = SCOLARIS_DATA.classes[classeIndex];
+            const ancienNom = classe.nom;
+            const nouveauNom = document.getElementById('modifClasseNom').value;
+            
+            classe.nom = nouveauNom;
+            classe.niveau = document.getElementById('modifClasseNiveau').value;
+            classe.effectif_max = parseInt(document.getElementById('modifClasseEffectifMax').value);
+            classe.salle = document.getElementById('modifClasseSalle').value;
+            classe.heure_rentree = document.getElementById('modifClasseHeureRentree').value;
+            
+            const profId = document.getElementById('modifClasseProfPrincipal').value;
+            classe.prof_principal_id = profId ? parseInt(profId) : null;
+            
+            if (profId) {
+                const prof = SCOLARIS_DATA.utilisateurs.find(u => u.id === parseInt(profId));
+                classe.prof_principal = prof ? prof.prenom + ' ' + prof.nom : 'Non attribué';
+            } else {
+                classe.prof_principal = 'Non attribué';
+            }
+            
+            // Mettre à jour le nom de la classe dans les élèves
+            SCOLARIS_DATA.eleves.forEach(eleve => {
+                if (eleve.classe_id === classeId) {
+                    eleve.classe = nouveauNom;
+                }
+            });
+            
+            sauvegarderDonnees();
+            alert('Classe modifiée avec succès !');
+            fermerModal();
+            afficherGestionClasses();
+        }
+        
+        function supprimerClasse(classeId) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cette classe ? Cette action est irréversible.')) {
+                return;
+            }
+            
+            // Vérifier si la classe contient des élèves
+            const elevesDansClasse = SCOLARIS_DATA.eleves.filter(e => e.classe_id === classeId);
+            if (elevesDansClasse.length > 0) {
+                if (!confirm(\`Cette classe contient \${elevesDansClasse.length} élève(s). Voulez-vous vraiment la supprimer ? Les élèves seront également supprimés.\`)) {
+                    return;
+                }
+                
+                // Supprimer les élèves de cette classe
+                SCOLARIS_DATA.eleves = SCOLARIS_DATA.eleves.filter(e => e.classe_id !== classeId);
+                
+                // Supprimer les comptes utilisateurs associés
+                SCOLARIS_DATA.utilisateurs = SCOLARIS_DATA.utilisateurs.filter(u => 
+                    !u.eleve_id || !elevesDansClasse.find(e => e.id === u.eleve_id)
+                );
+            }
+            
+            // Supprimer la classe
+            SCOLARIS_DATA.classes = SCOLARIS_DATA.classes.filter(c => c.id !== classeId);
+            sauvegarderDonnees();
+            alert('Classe supprimée avec succès !');
+            afficherGestionClasses();
+        }
+        
+        // ============================================
+        // GESTION DES MATIÈRES
+        // ============================================
+        
+        function afficherGestionMatieres() {
+            currentView = 'matieres';
+            document.getElementById('contenuPrincipal').innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h1 style="color: var(--couleur-principale);">Gestion des matières</h1>
+                    <button class="btn btn-primary" onclick="ouvrirModalNouvelleMatiere()">
+                        <i class="fas fa-plus"></i> Nouvelle matière
+                    </button>
+                </div>
+                
+                <div class="cards-container" style="margin-bottom: 30px;">
+                    <div class="card">
+                        <div class="card-title">Matières enseignées</div>
+                        <div class="card-value">${SCOLARIS_DATA.matieres.length}</div>
+                        <div class="card-subtitle">Total de l'établissement</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Coefficient moyen</div>
+                        <div class="card-value">${(SCOLARIS_DATA.matieres.reduce((sum, m) => sum + (m.coefficient || 1), 0) / SCOLARIS_DATA.matieres.length).toFixed(1)}</div>
+                        <div class="card-subtitle">Moyenne par matière</div>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <div class="table-header">
+                        <div class="table-title">Liste des matières</div>
+                        <button class="btn btn-secondary btn-small" onclick="exporterMatieres()">
+                            <i class="fas fa-file-export"></i> Exporter
+                        </button>
+                    </div>
+                    <div class="table-content">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Matière</th>
+                                    <th>Coefficient</th>
+                                    <th>Couleur</th>
+                                    <th>Enseignants</th>
+                                    <th>Heures/semaine</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${SCOLARIS_DATA.matieres.map(matiere => {
+                                    const enseignants = SCOLARIS_DATA.utilisateurs
+                                        .filter(u => u.role === 'enseignant' && u.matieres && u.matieres.includes(matiere.id))
+                                        .map(u => u.prenom + ' ' + u.nom);
+                                    return `
+                                        <tr>
+                                            <td><strong>${matiere.nom}</strong></td>
+                                            <td>${matiere.coefficient || 1}</td>
+                                            <td>
+                                                <div style="display: flex; align-items: center; gap: 10px;">
+                                                    <div style="width: 20px; height: 20px; background-color: ${matiere.couleur || '#3498DB'}; border-radius: 4px;"></div>
+                                                    ${matiere.couleur || '#3498DB'}
+                                                </div>
+                                            </td>
+                                            <td>${enseignants.length > 0 ? enseignants.join(', ') : 'Non attribué'}</td>
+                                            <td>${matiere.heures_semaine || 4}h</td>
+                                            <td>
+                                                <div style="display: flex; gap: 5px;">
+                                                    <button class="btn btn-secondary btn-small" onclick="modifierMatiere(${matiere.id})">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    ${matiere.id > 10 ? `
+                                                    <button class="btn btn-danger btn-small" onclick="supprimerMatiere(${matiere.id})">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>` : ''}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            setActiveMenu('matieres');
+        }
+        
+        function ouvrirModalNouvelleMatiere() {
+            const modalHtml = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">📚 Nouvelle matière</div>
+                        <button class="modal-close" onclick="fermerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formNouvelleMatiere">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Nom de la matière *</label>
+                                    <input type="text" class="form-control" id="matiereNom" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Coefficient *</label>
+                                    <select class="form-control" id="matiereCoefficient" required>
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3" selected>3</option>
+                                        <option value="4">4</option>
+                                        <option value="5">5</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Couleur *</label>
+                                    <input type="color" class="form-control" id="matiereCouleur" 
+                                           value="#3498DB" required style="height: 40px;">
+                                </div>
+                                <div class="form-group">
+                                    <label>Heures par semaine</label>
+                                    <input type="number" class="form-control" id="matiereHeures" 
+                                           value="4" min="1" max="10">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Description</label>
+                                    <textarea class="form-control" id="matiereDescription" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="fermerModal()">Annuler</button>
+                        <button class="btn btn-primary" onclick="creerNouvelleMatiere()">
+                            <i class="fas fa-save"></i> Créer la matière
+                        </button>
+                    </div>
+                </div>
+            `;
+            ouvrirModal(modalHtml);
+        }
+        
+        function creerNouvelleMatiere() {
+            const nom = document.getElementById('matiereNom').value;
+            const coefficient = parseInt(document.getElementById('matiereCoefficient').value);
+            const couleur = document.getElementById('matiereCouleur').value;
+            const heures = parseInt(document.getElementById('matiereHeures').value);
+            const description = document.getElementById('matiereDescription').value;
+            
+            if (!nom) {
+                alert('Veuillez remplir le nom de la matière');
+                return;
+            }
+            
+            // Vérifier si la matière existe déjà
+            if (SCOLARIS_DATA.matieres.find(m => m.nom.toLowerCase() === nom.toLowerCase())) {
+                alert('Une matière avec ce nom existe déjà');
+                return;
+            }
+            
+            const nouvelId = Math.max(...SCOLARIS_DATA.matieres.map(m => m.id), 0) + 1;
+            const nouvelleMatiere = {
+                id: nouvelId,
+                nom: nom,
+                coefficient: coefficient,
+                couleur: couleur,
+                heures_semaine: heures,
+                description: description,
+                created_at: new Date().toISOString().split('T')[0]
+            };
+            
+            SCOLARIS_DATA.matieres.push(nouvelleMatiere);
+            sauvegarderDonnees();
+            alert('Matière créée avec succès !');
+            fermerModal();
+            afficherGestionMatieres();
+        }
+        
+        function modifierMatiere(matiereId) {
+            const matiere = SCOLARIS_DATA.matieres.find(m => m.id === matiereId);
+            if (!matiere) return;
+            
+            const modalHtml = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">✏️ Modifier la matière : ${matiere.nom}</div>
+                        <button class="modal-close" onclick="fermerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formModifierMatiere">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Nom de la matière *</label>
+                                    <input type="text" class="form-control" id="modifMatiereNom" 
+                                           value="${matiere.nom}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Coefficient *</label>
+                                    <select class="form-control" id="modifMatiereCoefficient" required>
+                                        <option value="1" ${matiere.coefficient === 1 ? 'selected' : ''}>1</option>
+                                        <option value="2" ${matiere.coefficient === 2 ? 'selected' : ''}>2</option>
+                                        <option value="3" ${matiere.coefficient === 3 ? 'selected' : ''}>3</option>
+                                        <option value="4" ${matiere.coefficient === 4 ? 'selected' : ''}>4</option>
+                                        <option value="5" ${matiere.coefficient === 5 ? 'selected' : ''}>5</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Couleur *</label>
+                                    <input type="color" class="form-control" id="modifMatiereCouleur"
+                                           value="${matiere.couleur || '#3498DB'}" required style="height: 40px;">
+                                </div>
+                                <div class="form-group">
+                                    <label>Heures par semaine</label>
+                                    <input type="number" class="form-control" id="modifMatiereHeures"
+                                           value="${matiere.heures_semaine || 4}" min="1" max="10">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Description</label>
+                                    <textarea class="form-control" id="modifMatiereDescription" rows="3">${matiere.description || ''}</textarea>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="fermerModal()">Annuler</button>
+                        <button class="btn btn-primary" onclick="sauvegarderModificationMatiere(${matiereId})">
+                            <i class="fas fa-save"></i> Enregistrer
+                        </button>
+                    </div>
+                </div>
+            `;
+            ouvrirModal(modalHtml);
+        }
+        
+        function sauvegarderModificationMatiere(matiereId) {
+            const matiereIndex = SCOLARIS_DATA.matieres.findIndex(m => m.id === matiereId);
+            if (matiereIndex === -1) return;
+            
+            const matiere = SCOLARIS_DATA.matieres[matiereIndex];
+            
+            matiere.nom = document.getElementById('modifMatiereNom').value;
+            matiere.coefficient = parseInt(document.getElementById('modifMatiereCoefficient').value);
+            matiere.couleur = document.getElementById('modifMatiereCouleur').value;
+            matiere.heures_semaine = parseInt(document.getElementById('modifMatiereHeures').value);
+            matiere.description = document.getElementById('modifMatiereDescription').value;
+            
+            sauvegarderDonnees();
+            alert('Matière modifiée avec succès !');
+            fermerModal();
+            afficherGestionMatieres();
+        }
+        
+        function supprimerMatiere(matiereId) {
+            if (matiereId <= 10) {
+                alert('Les matières de base ne peuvent pas être supprimées');
+                return;
+            }
+            
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cette matière ?')) {
+                return;
+            }
+            
+            SCOLARIS_DATA.matieres = SCOLARIS_DATA.matieres.filter(m => m.id !== matiereId);
+            sauvegarderDonnees();
+            alert('Matière supprimée avec succès !');
+            afficherGestionMatieres();
+        }
+        
+        // ============================================
+        // GESTION DES COURS
+        // ============================================
+        
+        function afficherGestionCours() {
+            currentView = 'cours';
+            document.getElementById('contenuPrincipal').innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h1 style="color: var(--couleur-principale);">Gestion des cours</h1>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-primary" onclick="ouvrirModalNouveauCours()">
+                            <i class="fas fa-plus"></i> Nouveau cours
+                        </button>
+                        <button class="btn btn-secondary" onclick="genererEmploiDuTemps()">
+                            <i class="fas fa-calendar-plus"></i> Générer emploi du temps
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="cards-container" style="margin-bottom: 30px;">
+                    <div class="card">
+                        <div class="card-title">Cours programmés</div>
+                        <div class="card-value">${SCOLARIS_DATA.cours.length}</div>
+                        <div class="card-subtitle">Total cette semaine</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Cours avec devoirs</div>
+                        <div class="card-value">${SCOLARIS_DATA.cours.filter(c => c.devoir).length}</div>
+                        <div class="card-subtitle">Devoirs à donner</div>
+                    </div>
+                </div>
+                
+                <div class="tabs">
+                    <div class="tab active" onclick="changerOngletCours('liste')">Liste des cours</div>
+                    <div class="tab" onclick="changerOngletCours('semaine')">Semaine en cours</div>
+                    <div class="tab" onclick="changerOngletCours('devoirs')">Devoirs à donner</div>
+                </div>
+                
+                <div id="contenuCours">
+                    ${genererContenuListeCours()}
+                </div>
+            `;
+            setActiveMenu('cours');
+        }
+        
+        function genererContenuListeCours() {
+            return `
+                <div class="form-container">
+                    <h3 class="form-title">Tous les cours</h3>
+                    <div class="table-container">
+                        <div class="table-content">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Heure</th>
+                                        <th>Matière</th>
+                                        <th>Classe</th>
+                                        <th>Enseignant</th>
+                                        <th>Salle</th>
+                                        <th>Devoir</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${SCOLARIS_DATA.cours.map(cours => {
+                                        const matiere = SCOLARIS_DATA.matieres.find(m => m.id === cours.matiere_id);
+                                        const classe = SCOLARIS_DATA.classes.find(c => c.id === cours.classe_id);
+                                        const enseignant = SCOLARIS_DATA.utilisateurs.find(u => u.id === cours.enseignant_id);
+                                        return `
+                                            <tr>
+                                                <td>${formatDate(cours.date)}</td>
+                                                <td>${formatHeure(cours.heure_debut)} - ${formatHeure(cours.heure_fin)}</td>
+                                                <td>${matiere ? matiere.nom : 'Inconnue'}</td>
+                                                <td>${classe ? classe.nom : 'Inconnue'}</td>
+                                                <td>${enseignant ? enseignant.prenom + ' ' + enseignant.nom : 'Inconnu'}</td>
+                                                <td>${cours.salle || 'Non spécifié'}</td>
+                                                <td>${cours.devoir ? 
+                                                    '<span class="badge badge-success">Oui</span>' : 
+                                                    '<span class="badge badge-secondary">Non</span>'}</td>
+                                                <td>
+                                                    <div style="display: flex; gap: 5px;">
+                                                        <button class="btn btn-secondary btn-small" onclick="voirDetailsCours(${cours.id})">
+                                                            <i class="fas fa-eye"></i>
+                                                        </button>
+                                                        <button class="btn btn-secondary btn-small" onclick="modifierCours(${cours.id})">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
+                                                        <button class="btn btn-danger btn-small" onclick="supprimerCours(${cours.id})">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        `;
+                                    }).join('')}
+                                    ${SCOLARIS_DATA.cours.length === 0 ? `
+                                    <tr>
+                                        <td colspan="8" style="text-align: center; padding: 30px; color: #666;">
+                                            <i class="fas fa-calendar-alt" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                                            Aucun cours programmé.
+                                        </td>
+                                    </tr>` : ''}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function ouvrirModalNouveauCours() {
+            const modalHtml = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">📅 Nouveau cours</div>
+                        <button class="modal-close" onclick="fermerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formNouveauCours">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Date *</label>
+                                    <input type="date" class="form-control" id="coursDate" 
+                                           value="${new Date().toISOString().split('T')[0]}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Heure début *</label>
+                                    <input type="time" class="form-control" id="coursHeureDebut" 
+                                           value="08:30" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Heure fin *</label>
+                                    <input type="time" class="form-control" id="coursHeureFin" 
+                                           value="09:30" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Matière *</label>
+                                    <select class="form-control" id="coursMatiere" required>
+                                        <option value="">Sélectionner une matière</option>
+                                        ${SCOLARIS_DATA.matieres.map(matiere => 
+                                            `<option value="${matiere.id}">${matiere.nom}</option>`
+                                        ).join('')}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Classe *</label>
+                                    <select class="form-control" id="coursClasse" required>
+                                        <option value="">Sélectionner une classe</option>
+                                        ${SCOLARIS_DATA.classes.map(classe => 
+                                            `<option value="${classe.id}">${classe.nom}</option>`
+                                        ).join('')}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Enseignant *</label>
+                                    <select class="form-control" id="coursEnseignant" required>
+                                        <option value="">Sélectionner un enseignant</option>
+                                        ${SCOLARIS_DATA.utilisateurs
+                                            .filter(u => u.role === 'enseignant' && u.actif)
+                                            .map(enseignant => 
+                                                `<option value="${enseignant.id}">${enseignant.prenom} ${enseignant.nom}</option>`
+                                            ).join('')}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Salle</label>
+                                    <input type="text" class="form-control" id="coursSalle" 
+                                           placeholder="Ex: Salle 201">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group" style="flex: 2;">
+                                    <label>Sujet du cours</label>
+                                    <input type="text" class="form-control" id="coursSujet" 
+                                           placeholder="Ex: Les fonctions en mathématiques">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>
+                                        <input type="checkbox" id="coursDevoir"> 
+                                        Donner un devoir pour ce cours
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div id="champsDevoir" style="display: none;">
+                                <div class="form-row">
+                                    <div class="form-group" style="flex: 2;">
+                                        <label>Description du devoir</label>
+                                        <textarea class="form-control" id="devoirDescription" rows="3"
+                                                  placeholder="Décrivez le devoir à faire..."></textarea>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Date de rendu</label>
+                                        <input type="date" class="form-control" id="devoirDateRendu">
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="fermerModal()">Annuler</button>
+                        <button class="btn btn-primary" onclick="creerNouveauCours()">
+                            <i class="fas fa-save"></i> Créer le cours
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            ouvrirModal(modalHtml);
+            
+            // Afficher/masquer les champs devoir
+            document.getElementById('coursDevoir').addEventListener('change', function() {
+                const champsDevoir = document.getElementById('champsDevoir');
+                champsDevoir.style.display = this.checked ? 'block' : 'none';
+            });
+        }
+        
+        function creerNouveauCours() {
+            const date = document.getElementById('coursDate').value;
+            const heureDebut = document.getElementById('coursHeureDebut').value;
+            const heureFin = document.getElementById('coursHeureFin').value;
+            const matiereId = document.getElementById('coursMatiere').value;
+            const classeId = document.getElementById('coursClasse').value;
+            const enseignantId = document.getElementById('coursEnseignant').value;
+            const salle = document.getElementById('coursSalle').value;
+            const sujet = document.getElementById('coursSujet').value;
+            const hasDevoir = document.getElementById('coursDevoir').checked;
+            
+            if (!date || !heureDebut || !heureFin || !matiereId || !classeId || !enseignantId) {
+                alert('Veuillez remplir tous les champs obligatoires (*)');
+                return;
+            }
+            
+            const nouvelId = Math.max(...SCOLARIS_DATA.cours.map(c => c.id), 0) + 1;
+            const nouveauCours = {
+                id: nouvelId,
+                date: date,
+                heure_debut: heureDebut,
+                heure_fin: heureFin,
+                matiere_id: parseInt(matiereId),
+                classe_id: classeId,
+                enseignant_id: parseInt(enseignantId),
+                salle: salle,
+                sujet: sujet,
+                devoir: hasDevoir,
+                created_at: new Date().toISOString()
+            };
+            
+            if (hasDevoir) {
+                nouveauCours.devoir_description = document.getElementById('devoirDescription').value;
+                nouveauCours.devoir_date_rendu = document.getElementById('devoirDateRendu').value;
+                
+                // Créer aussi un devoir dans la liste des devoirs
+                const nouveauDevoirId = Math.max(...SCOLARIS_DATA.devoirs.map(d => d.id), 0) + 1;
+                const matiere = SCOLARIS_DATA.matieres.find(m => m.id === parseInt(matiereId));
+                const classe = SCOLARIS_DATA.classes.find(c => c.id === classeId);
+                
+                const nouveauDevoir = {
+                    id: nouveauDevoirId,
+                    cours_id: nouvelId,
+                    matiere_id: parseInt(matiereId),
+                    classe_id: classeId,
+                    enseignant_id: parseInt(enseignantId),
+                    description: document.getElementById('devoirDescription').value,
+                    date_rendu: document.getElementById('devoirDateRendu').value,
+                    date_creation: new Date().toISOString().split('T')[0],
+                    statut: 'à faire'
+                };
+                
+                SCOLARIS_DATA.devoirs.push(nouveauDevoir);
+            }
+            
+            SCOLARIS_DATA.cours.push(nouveauCours);
+            sauvegarderDonnees();
+            alert('Cours créé avec succès !');
+            fermerModal();
+            afficherGestionCours();
+        }
+        
+        function voirDetailsCours(coursId) {
+            const cours = SCOLARIS_DATA.cours.find(c => c.id === coursId);
+            if (!cours) return;
+            
+            const matiere = SCOLARIS_DATA.matieres.find(m => m.id === cours.matiere_id);
+            const classe = SCOLARIS_DATA.classes.find(c => c.id === cours.classe_id);
+            const enseignant = SCOLARIS_DATA.utilisateurs.find(u => u.id === cours.enseignant_id);
+            
+            const modalHtml = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">📖 Détails du cours</div>
+                        <button class="modal-close" onclick="fermerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div style="display: flex; gap: 30px; margin-bottom: 25px;">
+                            <div style="flex: 1;">
+                                <h4 style="color: var(--couleur-principale); margin-bottom: 15px;">Informations</h4>
+                                <p><strong>Date :</strong> ${formatDate(cours.date)}</p>
+                                <p><strong>Heure :</strong> ${formatHeure(cours.heure_debut)} - ${formatHeure(cours.heure_fin)}</p>
+                                <p><strong>Matière :</strong> ${matiere ? matiere.nom : 'Inconnue'}</p>
+                                <p><strong>Classe :</strong> ${classe ? classe.nom : 'Inconnue'}</p>
+                                <p><strong>Enseignant :</strong> ${enseignant ? enseignant.prenom + ' ' + enseignant.nom : 'Inconnu'}</p>
+                                <p><strong>Salle :</strong> ${cours.salle || 'Non spécifié'}</p>
+                            </div>
+                        </div>
+                        
+                        ${cours.sujet ? `
+                        <div style="margin-bottom: 20px;">
+                            <h4 style="color: var(--couleur-principale); margin-bottom: 10px;">Sujet du cours</h4>
+                            <p>${cours.sujet}</p>
+                        </div>` : ''}
+                        
+                        ${cours.devoir ? `
+                        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+                            <h4 style="color: var(--couleur-principale); margin-bottom: 10px;">📝 Devoir à faire</h4>
+                            <p>${cours.devoir_description || 'Pas de description'}</p>
+                            ${cours.devoir_date_rendu ? `
+                            <p style="margin-top: 10px;">
+                                <strong>À rendre pour le :</strong> ${formatDate(cours.devoir_date_rendu)}
+                            </p>` : ''}
+                        </div>` : ''}
+                        
+                        ${utilisateurCourant.role === 'enseignant' ? `
+                        <div style="margin-top: 20px;">
+                            <h4 style="color: var(--couleur-principale); margin-bottom: 15px;">Actions pour l'enseignant</h4>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="btn btn-primary" onclick="ajouterContenuCours(${coursId})">
+                                    <i class="fas fa-edit"></i> Ajouter du contenu
+                                </button>
+                                ${!cours.devoir ? `
+                                <button class="btn btn-warning" onclick="ajouterDevoirCours(${coursId})">
+                                    <i class="fas fa-tasks"></i> Donner un devoir
+                                </button>` : ''}
+                                <button class="btn btn-secondary" onclick="modifierCours(${coursId}); fermerModal()">
+                                    <i class="fas fa-edit"></i> Modifier le cours
+                                </button>
+                            </div>
+                        </div>` : ''}
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="fermerModal()">Fermer</button>
+                    </div>
+                </div>
+            `;
+            ouvrirModal(modalHtml);
+        }
+        
+        function ajouterContenuCours(coursId) {
+            const cours = SCOLARIS_DATA.cours.find(c => c.id === coursId);
+            if (!cours) return;
+            
+            const modalHtml = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">📝 Ajouter du contenu au cours</div>
+                        <button class="modal-close" onclick="fermerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formContenuCours">
+                            <div class="form-row">
+                                <div class="form-group" style="flex: 2;">
+                                    <label>Titre du contenu *</label>
+                                    <input type="text" class="form-control" id="contenuTitre" 
+                                           placeholder="Ex: Les fonctions affines" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group" style="flex: 2;">
+                                    <label>Contenu détaillé *</label>
+                                    <textarea class="form-control" id="contenuDetail" rows="10" required
+                                              placeholder="Décrivez ce qui a été fait pendant le cours, les points importants, les exercices réalisés..."></textarea>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group" style="flex: 2;">
+                                    <label>Documents à télécharger (liens ou noms)</label>
+                                    <textarea class="form-control" id="contenuDocuments" rows="3"
+                                              placeholder="Liste des documents distribués ou à télécharger..."></textarea>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="fermerModal()">Annuler</button>
+                        <button class="btn btn-primary" onclick="sauvegarderContenuCours(${coursId})">
+                            <i class="fas fa-save"></i> Enregistrer le contenu
+                        </button>
+                    </div>
+                </div>
+            `;
+            ouvrirModal(modalHtml);
+        }
+        
+        function sauvegarderContenuCours(coursId) {
+            const coursIndex = SCOLARIS_DATA.cours.findIndex(c => c.id === coursId);
+            if (coursIndex === -1) return;
+            
+            const titre = document.getElementById('contenuTitre').value;
+            const detail = document.getElementById('contenuDetail').value;
+            const documents = document.getElementById('contenuDocuments').value;
+            
+            if (!titre || !detail) {
+                alert('Veuillez remplir tous les champs obligatoires');
+                return;
+            }
+            
+            SCOLARIS_DATA.cours[coursIndex].contenu = {
+                titre: titre,
+                detail: detail,
+                documents: documents.split('\n').filter(d => d.trim()),
+                date_ajout: new Date().toISOString(),
+                ajoute_par: utilisateurCourant.id
+            };
+            
+            sauvegarderDonnees();
+            alert('Contenu du cours enregistré avec succès ! Les élèves pourront le consulter.');
+            fermerModal();
+        }
+        
+        function ajouterDevoirCours(coursId) {
+            const cours = SCOLARIS_DATA.cours.find(c => c.id === coursId);
+            if (!cours) return;
+            
+            const modalHtml = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">📝 Donner un devoir</div>
+                        <button class="modal-close" onclick="fermerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formDevoirCours">
+                            <div class="form-row">
+                                <div class="form-group" style="flex: 2;">
+                                    <label>Description du devoir *</label>
+                                    <textarea class="form-control" id="devoirDesc" rows="5" required
+                                              placeholder="Décrivez précisément le devoir à faire..."></textarea>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Date de rendu *</label>
+                                    <input type="date" class="form-control" id="devoirRenduDate" required
+                                           value="${new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}">
+                                </div>
+                                <div class="form-group">
+                                    <label>Type de devoir</label>
+                                    <select class="form-control" id="devoirType">
+                                        <option value="exercices">Exercices</option>
+                                        <option value="recherche">Recherche</option>
+                                        <option value="projet">Projet</option>
+                                        <option value="lecture">Lecture</option>
+                                        <option value="autre">Autre</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="fermerModal()">Annuler</button>
+                        <button class="btn btn-primary" onclick="sauvegarderDevoirCours(${coursId})">
+                            <i class="fas fa-save"></i> Donner le devoir
+                        </button>
+                    </div>
+                </div>
+            `;
+            ouvrirModal(modalHtml);
+        }
+        
+        function sauvegarderDevoirCours(coursId) {
+            const coursIndex = SCOLARIS_DATA.cours.findIndex(c => c.id === coursId);
+            if (coursIndex === -1) return;
+            
+            const description = document.getElementById('devoirDesc').value;
+            const dateRendu = document.getElementById('devoirRenduDate').value;
+            const type = document.getElementById('devoirType').value;
+            
+            if (!description || !dateRendu) {
+                alert('Veuillez remplir tous les champs obligatoires');
+                return;
+            }
+            
+            // Mettre à jour le cours
+            SCOLARIS_DATA.cours[coursIndex].devoir = true;
+            SCOLARIS_DATA.cours[coursIndex].devoir_description = description;
+            SCOLARIS_DATA.cours[coursIndex].devoir_date_rendu = dateRendu;
+            SCOLARIS_DATA.cours[coursIndex].devoir_type = type;
+            
+            // Créer un devoir dans la liste des devoirs
+            const cours = SCOLARIS_DATA.cours[coursIndex];
+            const nouveauDevoirId = Math.max(...SCOLARIS_DATA.devoirs.map(d => d.id), 0) + 1;
+            
+            const nouveauDevoir = {
+                id: nouveauDevoirId,
+                cours_id: coursId,
+                matiere_id: cours.matiere_id,
+                classe_id: cours.classe_id,
+                enseignant_id: cours.enseignant_id,
+                description: description,
+                date_rendu: dateRendu,
+                type: type,
+                date_creation: new Date().toISOString().split('T')[0],
+                statut: 'à faire'
+            };
+            
+            SCOLARIS_DATA.devoirs.push(nouveauDevoir);
+            sauvegarderDonnees();
+            
+            alert('Devoir donné avec succès ! Les élèves seront notifiés.');
+            fermerModal();
+        }
+        
+        // ============================================
+        // EMPLOI DU TEMPS
+        // ============================================
+        
+        function afficherEmploiDuTemps() {
+            currentView = 'emploi_temps';
+            
+            // Déterminer les cours de la semaine en cours
+            const aujourdhui = new Date();
+            const debutSemaine = new Date(aujourdhui);
+            debutSemaine.setDate(aujourdhui.getDate() - aujourdhui.getDay() + 1); // Lundi
+            
+            const joursSemaine = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'];
+            const creneaux = ['08:30-09:30', '09:30-10:30', '10:45-11:45', '11:45-12:45', '13:45-14:45', '14:45-15:45', '15:45-16:45'];
+            
+            let emploiHtml = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h1 style="color: var(--couleur-principale);">Emploi du temps</h1>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-primary" onclick="genererEmploiDuTemps()">
+                            <i class="fas fa-calendar-plus"></i> Générer automatiquement
+                        </button>
+                        <button class="btn btn-secondary" onclick="exporterEmploiDuTemps()">
+                            <i class="fas fa-file-export"></i> Exporter
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-row" style="margin-bottom: 20px;">
+                    <div class="form-group">
+                        <select class="form-control" onchange="changerClasseEmploiTemps(this.value)">
+                            <option value="">Toutes les classes</option>
+                            ${SCOLARIS_DATA.classes.map(classe => 
+                                `<option value="${classe.id}">${classe.nom}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <select class="form-control" onchange="changerEnseignantEmploiTemps(this.value)">
+                            <option value="">Tous les enseignants</option>
+                            ${SCOLARIS_DATA.utilisateurs
+                                .filter(u => u.role === 'enseignant' && u.actif)
+                                .map(enseignant => 
+                                    `<option value="${enseignant.id}">${enseignant.prenom} ${enseignant.nom}</option>`
+                                ).join('')}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="emploi-container">
+                    <div class="emploi-jour">Heures</div>
+            `;
+            
+            // Ajouter les jours
+            joursSemaine.forEach(jour => {
+                emploiHtml += `<div class="emploi-jour">${jour}</div>`;
+            });
+            
+            // Ajouter les créneaux
+            creneaux.forEach((creneau, index) => {
+                emploiHtml += `<div class="emploi-creneau">${creneau}</div>`;
+                
+                joursSemaine.forEach((jour, jourIndex) => {
+                    // Pour simplifier, on va chercher les cours qui correspondent à ce jour et créneau
+                    // En réalité, il faudrait faire correspondre avec les dates réelles
+                    const coursDansCreneau = SCOLARIS_DATA.cours.filter(c => {
+                        // Cette logique est simplifiée pour l'exemple
+                        return true; // À adapter avec une vraie logique de correspondance
+                    }).slice(0, 2); // Limiter à 2 cours par créneau pour l'exemple
+                    
+                    emploiHtml += `<div class="emploi-cell" onclick="ouvrirModalCoursCreneau(${index}, ${jourIndex})">`;
+                    
+                    coursDansCreneau.forEach(cours => {
+                        const matiere = SCOLARIS_DATA.matieres.find(m => m.id === cours.matiere_id);
+                        if (matiere) {
+                            emploiHtml += `
+                                <div class="cours-item" style="border-left-color: ${matiere.couleur || '#3498DB'};"
+                                     onclick="event.stopPropagation(); voirDetailsCours(${cours.id})">
+                                    <div style="font-weight: bold; font-size: 0.9rem;">${matiere.nom.substring(0, 15)}</div>
+                                    <div style="font-size: 0.8rem; color: #666;">${cours.salle || ''}</div>
+                                </div>
+                            `;
+                        }
+                    });
+                    
+                    emploiHtml += `</div>`;
+                });
+            });
+            
+            emploiHtml += `
+                </div>
+                
+                <div style="margin-top: 30px;">
+                    <h3 style="color: var(--couleur-principale); margin-bottom: 15px;">Légende</h3>
+                    <div style="display: flex; flex-wrap: wrap; gap: 15px;">
+                        ${SCOLARIS_DATA.matieres.slice(0, 5).map(matiere => `
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 20px; height: 20px; background-color: ${matiere.couleur || '#3498DB'}; border-radius: 4px;"></div>
+                                <span>${matiere.nom}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('contenuPrincipal').innerHTML = emploiHtml;
+            setActiveMenu('emploi_temps');
+        }
+        
+        function ouvrirModalCoursCreneau(creneauIndex, jourIndex) {
+            const jours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'];
+            const creneaux = ['08:30-09:30', '09:30-10:30', '10:45-11:45', '11:45-12:45', '13:45-14:45', '14:45-15:45', '15:45-16:45'];
+            
+            const modalHtml = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">➕ Ajouter un cours</div>
+                        <button class="modal-close" onclick="fermerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>Jour :</strong> ${jours[jourIndex]}</p>
+                        <p><strong>C
