@@ -4081,3 +4081,956 @@
                     <div class="modal-body">
                         <p><strong>Jour :</strong> ${jours[jourIndex]}</p>
                         <p><strong>Créneau :</strong> $ {creneaux[creneauIndex]}</p>
+<div style="margin-top: 20px;">
+                        <button class="btn btn-primary" onclick="creerCoursEmploiTemps(${creneauIndex}, ${jourIndex})">
+                     lu       <i class="fas fa-plus"></i> Créer un cours pour ce créneau
+                        </button>
+                    </div>
+                    
+                    <div style="margin-top: 30px;">
+                        <h4 style="color: var(--couleur-principale); margin-bottom: 15px;">Cours existants dans ce créneau</h4>
+                        <div style="max-height: 300px; overflow-y: auto;">
+                            ${SCOLARIS_DATA.cours.slice(0, 3).map(cours => {
+                                const matiere = SCOLARIS_DATA.matieres.find(m => m.id === cours.matiere_id);
+                                const classe = SCOLARIS_DATA.classes.find(c => c.id === cours.classe_id);
+                                return `
+                                    <div class="cours-item" style="margin-bottom: 10px;">
+                                        <div style="display: flex; justify-content: space-between;">
+                                            <div>
+                                                <strong>${matiere ? matiere.nom : 'Inconnu'}</strong>
+                                                <div style="font-size: 0.9rem; color: #666;">
+                                                    ${classe ? classe.nom : ''} - ${cours.salle || ''}
+                                                </div>
+                                            </div>
+                                            <button class="btn btn-secondary btn-small" onclick="voirDetailsCours(${cours.id}); fermerModal()">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="fermerModal()">Fermer</button>
+                </div>
+            </div>
+        `;
+        ouvrirModal(modalHtml);
+    }
+    
+    function creerCoursEmploiTemps(creneauIndex, jourIndex) {
+        const jours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'];
+        const creneaux = [
+            { debut: '08:30', fin: '09:30' },
+            { debut: '09:30', fin: '10:30' },
+            { debut: '10:45', fin: '11:45' },
+            { debut: '11:45', fin: '12:45' },
+            { debut: '13:45', fin: '14:45' },
+            { debut: '14:45', fin: '15:45' },
+            { debut: '15:45', fin: '16:45' }
+        ];
+        
+        // Calculer la date du prochain jour correspondant
+        const aujourdhui = new Date();
+        const jourActuel = aujourdhui.getDay(); // 0 = dimanche, 1 = lundi, etc.
+        const joursADeplacer = (jourIndex + 1) - jourActuel;
+        if (joursADeplacer < 0) joursADeplacer += 7;
+        
+        const dateCours = new Date(aujourdhui);
+        dateCours.setDate(aujourdhui.getDate() + joursADeplacer);
+        
+        const modalHtml = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">📅 Nouveau cours</div>
+                    <button class="modal-close" onclick="fermerModal()">×</button>
+                </div>
+                <div class="modal-body">
+                    <form id="formCoursEmploiTemps">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Date *</label>
+                                <input type="date" class="form-control" id="emploiDate" 
+                                       value="${dateCours.toISOString().split('T')[0]}" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Heure début *</label>
+                                <input type="time" class="form-control" id="emploiHeureDebut" 
+                                       value="${creneaux[creneauIndex].debut}" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Heure fin *</label>
+                                <input type="time" class="form-control" id="emploiHeureFin" 
+                                       value="${creneaux[creneauIndex].fin}" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Matière *</label>
+                                <select class="form-control" id="emploiMatiere" required>
+                                    <option value="">Sélectionner une matière</option>
+                                    ${SCOLARIS_DATA.matieres.map(matiere => 
+                                        `<option value="${matiere.id}">${matiere.nom}</option>`
+                                    ).join('')}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Classe *</label>
+                                <select class="form-control" id="emploiClasse" required>
+                                    <option value="">Sélectionner une classe</option>
+                                    ${SCOLARIS_DATA.classes.map(classe => 
+                                        `<option value="${classe.id}">${classe.nom}</option>`
+                                    ).join('')}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Enseignant *</label>
+                                <select class="form-control" id="emploiEnseignant" required>
+                                    <option value="">Sélectionner un enseignant</option>
+                                    ${SCOLARIS_DATA.utilisateurs
+                                        .filter(u => u.role === 'enseignant' && u.actif)
+                                        .map(enseignant => 
+                                            `<option value="${enseignant.id}">${enseignant.prenom} ${enseignant.nom}</option>`
+                                        ).join('')}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Salle</label>
+                                <input type="text" class="form-control" id="emploiSalle" 
+                                       placeholder="Ex: Salle 201">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 2;">
+                                <label>Répéter ce cours chaque semaine</label>
+                                <select class="form-control" id="emploiRepetition">
+                                    <option value="0">Non</option>
+                                    <option value="1">1 semaine</option>
+                                    <option value="2">2 semaines</option>
+                                    <option value="4">4 semaines</option>
+                                    <option value="8">Tout le trimestre</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="fermerModal()">Annuler</button>
+                    <button class="btn btn-primary" onclick="creerCoursDepuisEmploi()">
+                        <i class="fas fa-save"></i> Créer le cours
+                    </button>
+                </div>
+            </div>
+        `;
+        ouvrirModal(modalHtml);
+    }
+    
+    function creerCoursDepuisEmploi() {
+        const date = document.getElementById('emploiDate').value;
+        const heureDebut = document.getElementById('emploiHeureDebut').value;
+        const heureFin = document.getElementById('emploiHeureFin').value;
+        const matiereId = document.getElementById('emploiMatiere').value;
+        const classeId = document.getElementById('emploiClasse').value;
+        const enseignantId = document.getElementById('emploiEnseignant').value;
+        const salle = document.getElementById('emploiSalle').value;
+        const repetition = parseInt(document.getElementById('emploiRepetition').value);
+        
+        if (!date || !heureDebut || !heureFin || !matiereId || !classeId || !enseignantId) {
+            alert('Veuillez remplir tous les champs obligatoires (*)');
+            return;
+        }
+        
+        const nouvelId = Math.max(...SCOLARIS_DATA.cours.map(c => c.id), 0) + 1;
+        const nouveauCours = {
+            id: nouvelId,
+            date: date,
+            heure_debut: heureDebut,
+            heure_fin: heureFin,
+            matiere_id: parseInt(matiereId),
+            classe_id: classeId,
+            enseignant_id: parseInt(enseignantId),
+            salle: salle,
+            created_at: new Date().toISOString()
+        };
+        
+        SCOLARIS_DATA.cours.push(nouveauCours);
+        
+        // Créer des répétitions si demandé
+        if (repetition > 0) {
+            for (let i = 1; i <= repetition; i++) {
+                const dateRepetition = new Date(date);
+                dateRepetition.setDate(dateRepetition.getDate() + (i * 7));
+                
+                const coursRepetition = {
+                    id: nouvelId + i,
+                    date: dateRepetition.toISOString().split('T')[0],
+                    heure_debut: heureDebut,
+                    heure_fin: heureFin,
+                    matiere_id: parseInt(matiereId),
+                    classe_id: classeId,
+                    enseignant_id: parseInt(enseignantId),
+                    salle: salle,
+                    created_at: new Date().toISOString()
+                };
+                
+                SCOLARIS_DATA.cours.push(coursRepetition);
+            }
+        }
+        
+        sauvegarderDonnees();
+        alert('Cours créé avec succès !' + (repetition > 0 ? ` ${repetition + 1} cours créés.` : ''));
+        fermerModal();
+        afficherEmploiDuTemps();
+    }
+    
+    function genererEmploiDuTemps() {
+        if (!confirm('Générer automatiquement un emploi du temps pour toutes les classes ?')) {
+            return;
+        }
+        
+        // Exemple simplifié de génération d'emploi du temps
+        const jours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'];
+        const creneaux = [
+            { debut: '08:30', fin: '09:30' },
+            { debut: '09:30', fin: '10:30' },
+            { debut: '10:45', fin: '11:45' },
+            { debut: '11:45', fin: '12:45' },
+            { debut: '13:45', fin: '14:45' },
+            { debut: '14:45', fin: '15:45' },
+            { debut: '15:45', fin: '16:45' }
+        ];
+        
+        // Date de début (prochain lundi)
+        const aujourdhui = new Date();
+        const jourActuel = aujourdhui.getDay();
+        const joursVersLundi = jourActuel === 0 ? 1 : (8 - jourActuel) % 7;
+        const dateLundi = new Date(aujourdhui);
+        dateLundi.setDate(aujourdhui.getDate() + joursVersLundi);
+        
+        let coursCrees = 0;
+        
+        // Pour chaque classe
+        SCOLARIS_DATA.classes.forEach(classe => {
+            // Pour chaque jour de la semaine
+            jours.forEach((jour, jourIndex) => {
+                const dateCours = new Date(dateLundi);
+                dateCours.setDate(dateLundi.getDate() + jourIndex);
+                
+                // Pour chaque créneau
+                creneaux.forEach((creneau, creneauIndex) => {
+                    // 70% de chance d'avoir un cours dans ce créneau
+                    if (Math.random() < 0.7) {
+                        // Choisir une matière aléatoire
+                        const matiereIndex = Math.floor(Math.random() * Math.min(5, SCOLARIS_DATA.matieres.length));
+                        const matiere = SCOLARIS_DATA.matieres[matiereIndex];
+                        
+                        // Choisir un enseignant aléatoire
+                        const enseignants = SCOLARIS_DATA.utilisateurs.filter(u => u.role === 'enseignant' && u.actif);
+                        if (enseignants.length > 0) {
+                            const enseignant = enseignants[Math.floor(Math.random() * enseignants.length)];
+                            
+                            const nouveauCours = {
+                                id: Math.max(...SCOLARIS_DATA.cours.map(c => c.id), 0) + 1 + coursCrees,
+                                date: dateCours.toISOString().split('T')[0],
+                                heure_debut: creneau.debut,
+                                heure_fin: creneau.fin,
+                                matiere_id: matiere.id,
+                                classe_id: classe.id,
+                                enseignant_id: enseignant.id,
+                                salle: `Salle ${Math.floor(Math.random() * 20) + 100}`,
+                                created_at: new Date().toISOString()
+                            };
+                            
+                            SCOLARIS_DATA.cours.push(nouveauCours);
+                            coursCrees++;
+                        }
+                    }
+                });
+            });
+        });
+        
+        sauvegarderDonnees();
+        alert(`${coursCrees} cours générés automatiquement pour la semaine du ${dateLundi.toLocaleDateString('fr-FR')}`);
+        afficherEmploiDuTemps();
+    }
+    
+    // ============================================
+    // PARAMÈTRES
+    // ============================================
+    
+    function afficherParametres() {
+        currentView = 'parametres';
+        const config = SCOLARIS_DATA.system.config || {};
+        const etablissement = SCOLARIS_DATA.system.etablissement;
+        
+        document.getElementById('contenuPrincipal').innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                <h1 style="color: var(--couleur-principale);">Paramètres du système</h1>
+                <button class="btn btn-primary" onclick="sauvegarderParametres()">
+                    <i class="fas fa-save"></i> Enregistrer tous les paramètres
+                </button>
+            </div>
+            
+            <div class="tabs">
+                <div class="tab active" onclick="changerOngletParametres('etablissement')">Établissement</div>
+                <div class="tab" onclick="changerOngletParametres('systeme')">Système</div>
+                <div class="tab" onclick="changerOngletParametres('securite')">Sécurité</div>
+                <div class="tab" onclick="changerOngletParametres('sauvegarde')">Sauvegarde</div>
+                <div class="tab" onclick="changerOngletParametres('import')">Import/Export</div>
+            </div>
+            
+            <div id="contenuParametres">
+                ${genererContenuParametresEtablissement(etablissement)}
+            </div>
+            
+            <div class="mention-legale">
+                <i class="fas fa-exclamation-circle"></i>
+                Les modifications sont sauvegardées automatiquement dans votre navigateur.
+            </div>
+        `;
+        setActiveMenu('parametres');
+    }
+    
+    function genererContenuParametresEtablissement(etablissement) {
+        return `
+            <div class="form-container">
+                <h3 class="form-title">Informations de l'établissement</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nom de l'établissement *</label>
+                        <input type="text" class="form-control" id="paramEtablissementNom"
+                               value="${etablissement.nom}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Type d'établissement *</label>
+                        <select class="form-control" id="paramEtablissementType" required>
+                            <option value="Collège public" ${etablissement.type === 'Collège public' ? 'selected' : ''}>Collège public</option>
+                            <option value="Collège privé" ${etablissement.type === 'Collège privé' ? 'selected' : ''}>Collège privé</option>
+                            <option value="Lycée général" ${etablissement.type === 'Lycée général' ? 'selected' : ''}>Lycée général</option>
+                            <option value="Lycée professionnel" ${etablissement.type === 'Lycée professionnel' ? 'selected' : ''}>Lycée professionnel</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Adresse *</label>
+                        <input type="text" class="form-control" id="paramEtablissementAdresse"
+                               value="${etablissement.adresse}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Ville *</label>
+                        <input type="text" class="form-control" id="paramEtablissementVille"
+                               value="${etablissement.ville}" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Téléphone</label>
+                        <input type="text" class="form-control" id="paramEtablissementTelephone"
+                               value="${etablissement.telephone || ''}">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" class="form-control" id="paramEtablissementEmail"
+                               value="${etablissement.email || ''}">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Année scolaire *</label>
+                        <input type="text" class="form-control" id="paramEtablissementAnnee"
+                               value="${etablissement.annee_scolaire}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Directeur</label>
+                        <input type="text" class="form-control" id="paramEtablissementDirecteur"
+                               value="${etablissement.directeur || ''}">
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    function changerOngletParametres(tab) {
+        // Activer l'onglet
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t => {
+            if (t.textContent.includes(tab)) t.classList.add('active');
+        });
+        
+        let contenu = '';
+        const config = SCOLARIS_DATA.system.config || {};
+        
+        switch(tab) {
+            case 'etablissement':
+                contenu = genererContenuParametresEtablissement(SCOLARIS_DATA.system.etablissement);
+                break;
+                
+            case 'systeme':
+                contenu = `
+                    <div class="form-container">
+                        <h3 class="form-title">Configuration du système</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Thème de l'interface</label>
+                                <select class="form-control" id="paramTheme">
+                                    <option value="default" ${config.theme === 'default' ? 'selected' : ''}>Par défaut (Bleu)</option>
+                                    <option value="dark" ${config.theme === 'dark' ? 'selected' : ''}>Sombre</option>
+                                    <option value="green" ${config.theme === 'green' ? 'selected' : ''}>Vert</option>
+                                    <option value="red" ${config.theme === 'red' ? 'selected' : ''}>Rouge</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Langue</label>
+                                <select class="form-control" id="paramLangue">
+                                    <option value="fr" selected>Français</option>
+                                    <option value="en">English</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label><input type="checkbox" id="paramNotifications" ${config.notifications ? 'checked' : ''}>
+                                    Activer les notifications
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label><input type="checkbox" id="paramExportAuto" ${config.export_auto ? 'checked' : ''}>
+                                    Export automatique des données
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                break;
+                
+            case 'securite':
+                contenu = `
+                    <div class="form-container">
+                        <h3 class="form-title">Sécurité</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Durée de session (minutes)</label>
+                                <input type="number" class="form-control" id="paramDureeSession"
+                                       value="${config.duree_session || 30}" min="5" max="240">
+                            </div>
+                            <div class="form-group">
+                                <label>Complexité des mots de passe</label>
+                                <select class="form-control" id="paramComplexitePassword">
+                                    <option value="faible" ${config.complexite_password === 'faible' ? 'selected' : ''}>Faible (6 caractères)</option>
+                                    <option value="moyenne" ${config.complexite_password === 'moyenne' || !config.complexite_password ? 'selected' : ''}>Moyenne (8 caractères, majuscule, chiffre)</option>
+                                    <option value="forte" ${config.complexite_password === 'forte' ? 'selected' : ''}>Forte (12 caractères, complexe)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label><input type="checkbox" id="paramForceChangementPassword" ${config.force_changement_password ? 'checked' : ''}>
+                                    Forcer le changement de mot de passe au premier login
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label><input type="checkbox" id="paramConnexionDouble" ${config.connexion_double ? 'checked' : ''}>
+                                    Double authentification pour les administrateurs
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                break;
+                
+            case 'sauvegarde':
+                contenu = `
+                    <div class="form-container">
+                        <h3 class="form-title">Sauvegarde et maintenance</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Fréquence de sauvegarde automatique</label>
+                                <select class="form-control" id="paramFrequenceSauvegarde">
+                                    <option value="journaliere" ${config.frequence_sauvegarde === 'journaliere' ? 'selected' : ''}>Quotidienne</option>
+                                    <option value="hebdomadaire" ${config.frequence_sauvegarde === 'hebdomadaire' || !config.frequence_sauvegarde ? 'selected' : ''}>Hebdomadaire</option>
+                                    <option value="mensuelle" ${config.frequence_sauvegarde === 'mensuelle' ? 'selected' : ''}>Mensuelle</option>
+                                    <option value="aucune" ${config.frequence_sauvegarde === 'aucune' ? 'selected' : ''}>Aucune</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Conserver les données pendant</label>
+                                <select class="form-control" id="paramConservationDonnees">
+                                    <option value="1" ${config.conservation_donnees === '1' ? 'selected' : ''}>1 an</option>
+                                    <option value="3" ${config.conservation_donnees === '3' || !config.conservation_donnees ? 'selected' : ''}>3 ans</option>
+                                    <option value="5" ${config.conservation_donnees === '5' ? 'selected' : ''}>5 ans</option>
+                                    <option value="indefinie" ${config.conservation_donnees === 'indefinie' ? 'selected' : ''}>Indéfiniment</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="margin-top: 20px;">
+                            <button class="btn btn-primary" onclick="sauvegarderDonneesLocal()">
+                                <i class="fas fa-download"></i> Sauvegarder maintenant
+                            </button>
+                            <button class="btn btn-secondary" onclick="restaurerSauvegarde()" style="margin-left: 10px;">
+                                <i class="fas fa-upload"></i> Restaurer une sauvegarde
+                            </button>
+                            <button class="btn btn-danger" onclick="reinitialiserDonnees()" style="margin-left: 10px;">
+                                <i class="fas fa-trash"></i> Réinitialiser les données
+                            </button>
+                        </div>
+                        <div style="margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 6px;">
+                            <h4 style="color: var(--couleur-principale); margin-bottom: 10px;">
+                                <i class="fas fa-info-circle"></i> Informations système
+                            </h4>
+                            <p><strong>Version :</strong> ${SCOLARIS_DATA.system.version}</p>
+                            <p><strong>Dernière sauvegarde :</strong> ${config.derniere_sauvegarde ? formatDate(config.derniere_sauvegarde) : 'Jamais'}</p>
+                            <p><strong>Taille des données :</strong> ${Math.round(JSON.stringify(SCOLARIS_DATA).length / 1024)} Ko</p>
+                            <p><strong>Utilisateurs actifs :</strong> ${SCOLARIS_DATA.utilisateurs.filter(u => u.actif).length}</p>
+                        </div>
+                    </div>
+                `;
+                break;
+                
+            case 'import':
+                contenu = `
+                    <div class="form-container">
+                        <h3 class="form-title">Import et Export de données</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div>
+                                <h4 style="color: var(--couleur-principale); margin-bottom: 15px;">Exporter</h4>
+                                <div style="display: flex; flex-direction: column; gap: 10px;">
+                                    <button class="btn btn-secondary" onclick="exporterDonnees('eleves')">
+                                        <i class="fas fa-user-graduate"></i> Élèves (CSV)
+                                    </button>
+                                    <button class="btn btn-secondary" onclick="exporterDonnees('enseignants')">
+                                        <i class="fas fa-chalkboard-teacher"></i> Enseignants (CSV)
+                                    </button>
+                                    <button class="btn btn-secondary" onclick="exporterDonnees('classes')">
+                                        <i class="fas fa-users"></i> Classes (CSV)
+                                    </button>
+                                    <button class="btn btn-secondary" onclick="exporterDonnees('notes')">
+                                        <i class="fas fa-graduation-cap"></i> Notes (CSV)
+                                    </button>
+                                    <button class="btn btn-secondary" onclick="exporterDonnees('cours')">
+                                        <i class="fas fa-calendar-alt"></i> Cours (CSV)
+                                    </button>
+                                    <button class="btn btn-primary" onclick="exporterDonnees('tout')">
+                                        <i class="fas fa-database"></i> Toutes les données (JSON)
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 style="color: var(--couleur-principale); margin-bottom: 15px;">Importer</h4>
+                                <div style="display: flex; flex-direction: column; gap: 10px;">
+                                    <button class="btn btn-secondary" onclick="importerDonnees('eleves')">
+                                        <i class="fas fa-file-import"></i> Élèves (CSV)
+                                    </button>
+                                    <button class="btn btn-secondary" onclick="importerDonnees('enseignants')">
+                                        <i class="fas fa-file-import"></i> Enseignants (CSV)
+                                    </button>
+                                    <button class="btn btn-secondary" onclick="importerDonnees('classes')">
+                                        <i class="fas fa-file-import"></i> Classes (CSV)
+                                    </button>
+                                    <button class="btn btn-primary" onclick="importerDonnees('sauvegarde')">
+                                        <i class="fas fa-upload"></i> Sauvegarde complète (JSON)
+                                    </button>
+                                </div>
+                                <div style="margin-top: 20px; padding: 15px; background-color: #fff3cd; border-radius: 6px;">
+                                    <h5 style="color: #856404; margin-bottom: 10px;">
+                                        <i class="fas fa-exclamation-triangle"></i> Attention
+                                    </h5>
+                                    <p style="font-size: 0.9rem; color: #856404;">
+                                        L'import de données écrasera les données existantes. 
+                                        Faites une sauvegarde avant toute importation.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                break;
+        }
+        
+        document.getElementById('contenuParametres').innerHTML = contenu;
+    }
+    
+    function sauvegarderParametres() {
+        // Mettre à jour les informations de l'établissement
+        SCOLARIS_DATA.system.etablissement.nom = document.getElementById('paramEtablissementNom').value;
+        SCOLARIS_DATA.system.etablissement.type = document.getElementById('paramEtablissementType').value;
+        SCOLARIS_DATA.system.etablissement.adresse = document.getElementById('paramEtablissementAdresse').value;
+        SCOLARIS_DATA.system.etablissement.ville = document.getElementById('paramEtablissementVille').value;
+        SCOLARIS_DATA.system.etablissement.telephone = document.getElementById('paramEtablissementTelephone').value;
+        SCOLARIS_DATA.system.etablissement.email = document.getElementById('paramEtablissementEmail').value;
+        SCOLARIS_DATA.system.etablissement.annee_scolaire = document.getElementById('paramEtablissementAnnee').value;
+        SCOLARIS_DATA.system.etablissement.directeur = document.getElementById('paramEtablissementDirecteur').value;
+        
+        // Mettre à jour la configuration
+        SCOLARIS_DATA.system.config = {
+            theme: document.getElementById('paramTheme') ? document.getElementById('paramTheme').value : 'default',
+            notifications: document.getElementById('paramNotifications') ? document.getElementById('paramNotifications').checked : true,
+            export_auto: document.getElementById('paramExportAuto') ? document.getElementById('paramExportAuto').checked : false,
+            duree_session: document.getElementById('paramDureeSession') ? parseInt(document.getElementById('paramDureeSession').value) : 30,
+            complexite_password: document.getElementById('paramComplexitePassword') ? document.getElementById('paramComplexitePassword').value : 'moyenne',
+            force_changement_password: document.getElementById('paramForceChangementPassword') ? document.getElementById('paramForceChangementPassword').checked : false,
+            connexion_double: document.getElementById('paramConnexionDouble') ? document.getElementById('paramConnexionDouble').checked : false,
+            frequence_sauvegarde: document.getElementById('paramFrequenceSauvegarde') ? document.getElementById('paramFrequenceSauvegarde').value : 'hebdomadaire',
+            conservation_donnees: document.getElementById('paramConservationDonnees') ? document.getElementById('paramConservationDonnees').value : '3',
+            derniere_sauvegarde: new Date().toISOString().split('T')[0]
+        };
+        
+        sauvegarderDonnees();
+        alert('Paramètres enregistrés avec succès !');
+        
+        // Mettre à jour l'affichage de l'établissement
+        afficherInformationsEtablissement();
+    }
+    
+    function sauvegarderDonneesLocal() {
+        const dataStr = JSON.stringify(SCOLARIS_DATA, null, 2);
+        const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+        const exportFileDefaultName = \`scolaris_sauvegarde_\${new Date().toISOString().split('T')[0]}.json\`;
+        
+        const linkElement = document.createElement('a');
+        linkElement.setAttribute('href', dataUri);
+        linkElement.setAttribute('download', exportFileDefaultName);
+        linkElement.click();
+        
+        alert('Sauvegarde téléchargée avec succès !');
+    }
+    
+    function restaurerSauvegarde() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        
+        input.onchange = function(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const donnees = JSON.parse(e.target.result);
+                    
+                    if (!donnees.system || !donnees.utilisateurs) {
+                        throw new Error('Format de fichier invalide');
+                    }
+                    
+                    if (confirm('Voulez-vous vraiment restaurer cette sauvegarde ? Toutes les données actuelles seront perdues.')) {
+                        localStorage.setItem('SCOLARIS_DATA', JSON.stringify(donnees));
+                        alert('Sauvegarde restaurée avec succès ! Redémarrage nécessaire.');
+                        location.reload();
+                    }
+                } catch (error) {
+                    alert('Erreur : Le fichier n\'est pas une sauvegarde valide de SCOLARIS');
+                }
+            };
+            
+            reader.readAsText(file);
+        };
+        
+        input.click();
+    }
+    
+    function reinitialiserDonnees() {
+        if (!confirm('ATTENTION : Cette action supprimera TOUTES les données (utilisateurs, élèves, classes, notes, etc.) et réinitialisera le système. Cette action est irréversible. Continuer ?')) {
+            return;
+        }
+        
+        if (!confirm('Êtes-vous ABSOLUMENT sûr ? Toutes vos données seront perdues.')) {
+            return;
+        }
+        
+        // Garder seulement l'administrateur principal
+        const admin = SCOLARIS_DATA.utilisateurs.find(u => u.id === 1);
+        const etablissement = SCOLARIS_DATA.system.etablissement;
+        
+        SCOLARIS_DATA = {
+            system: {
+                nom: "SCOLARIS",
+                version: "5.0.0",
+                etablissement: etablissement,
+                config: SCOLARIS_DATA.system.config || {}
+            },
+            utilisateurs: [admin],
+            roles: SCOLARIS_DATA.roles,
+            classes: [],
+            eleves: [],
+            matieres: SCOLARIS_DATA.matieres,
+            cours: [],
+            notes: [],
+            observations: [],
+            exclusions: [],
+            absences: [],
+            retards: [],
+            devoirs: [],
+            emploi_du_temps: [],
+            messages: [],
+            documents: []
+        };
+        
+        sauvegarderDonnees();
+        alert('Données réinitialisées avec succès !');
+        location.reload();
+    }
+    
+    // ============================================
+    // FONCTIONS AUXILIAIRES
+    // ============================================
+    
+    function exporterDonnees(type) {
+        let data, filename;
+        
+        switch(type) {
+            case 'eleves':
+                data = SCOLARIS_DATA.eleves;
+                filename = 'eleves.csv';
+                break;
+            case 'enseignants':
+                data = SCOLARIS_DATA.utilisateurs.filter(u => u.role === 'enseignant');
+                filename = 'enseignants.csv';
+                break;
+            case 'classes':
+                data = SCOLARIS_DATA.classes;
+                filename = 'classes.csv';
+                break;
+            case 'notes':
+                data = SCOLARIS_DATA.notes;
+                filename = 'notes.csv';
+                break;
+            case 'cours':
+                data = SCOLARIS_DATA.cours;
+                filename = 'cours.csv';
+                break;
+            case 'tout':
+                data = SCOLARIS_DATA;
+                filename = \`scolaris_complet_\${new Date().toISOString().split('T')[0]}.json\`;
+                break;
+        }
+        
+        if (type === 'tout') {
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', filename);
+            linkElement.click();
+        } else {
+            // Convertir en CSV (simplifié)
+            const csv = convertirEnCSV(data);
+            const dataUri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', filename);
+            linkElement.click();
+        }
+        
+        alert(\`Données exportées avec succès : \${filename}\`);
+    }
+    
+    function convertirEnCSV(data) {
+        if (data.length === 0) return '';
+        
+        // Extraire les en-têtes
+        const headers = Object.keys(data[0]);
+        
+        // Créer les lignes CSV
+        const rows = data.map(obj => 
+            headers.map(header => {
+                const value = obj[header];
+                // Échapper les guillemets et les virgules
+                return \`"\${String(value).replace(/"/g, '""')}"\`;
+            }).join(',')
+        );
+        
+        return [headers.join(','), ...rows].join('\n');
+    }
+    
+    function importerDonnees(type) {
+        alert(\`Import \${type} - Fonctionnalité en développement\`);
+        // Implémentation réelle nécessiterait un système de parsing CSV/JSON
+    }
+    
+    function filtrerObservations(type) {
+        alert(\`Filtrer observations par \${type}\`);
+    }
+    
+    function filtrerNotesParClasse(classeId) {
+        alert(\`Filtrer notes par classe \${classeId}\`);
+    }
+    
+    function filtrerNotesParMatiere(matiereId) {
+        alert(\`Filtrer notes par matière \${matiereId}\`);
+    }
+    
+    function rechercherEleves(term) {
+        alert(\`Rechercher élèves : \${term}\`);
+    }
+    
+    function filtrerElevesParClasse(classeId) {
+        alert(\`Filtrer élèves par classe \${classeId}\`);
+    }
+    
+    function changerOngletCours(tab) {
+        alert(\`Changer onglet cours : \${tab}\`);
+    }
+    
+    function changerClasseEmploiTemps(classeId) {
+        alert(\`Changer classe emploi du temps : \${classeId}\`);
+    }
+    
+    function changerEnseignantEmploiTemps(enseignantId) {
+        alert(\`Changer enseignant emploi du temps : \${enseignantId}\`);
+    }
+    
+    function exporterEmploiDuTemps() {
+        alert('Export emploi du temps en PDF');
+    }
+    
+    function modifierNote(noteId) {
+        alert(\`Modifier note \${noteId}\`);
+    }
+    
+    function supprimerNote(noteId) {
+        if (confirm('Êtes-vous sûr de vouloir supprimer cette note ?')) {
+            SCOLARIS_DATA.notes = SCOLARIS_DATA.notes.filter(n => n.id !== noteId);
+            sauvegarderDonnees();
+            afficherCarnetComplet();
+        }
+    }
+    
+    function modifierObservation(obsId) {
+        alert(\`Modifier observation \${obsId}\`);
+    }
+    
+    function supprimerObservation(obsId) {
+        if (confirm('Êtes-vous sûr de vouloir supprimer cette observation ?')) {
+            SCOLARIS_DATA.observations = SCOLARIS_DATA.observations.filter(o => o.id !== obsId);
+            sauvegarderDonnees();
+            afficherCarnetComplet();
+        }
+    }
+    
+    function modifierExclusion(exclusionId) {
+        alert(\`Modifier exclusion \${exclusionId}\`);
+    }
+    
+    function supprimerExclusion(exclusionId) {
+        if (confirm('Êtes-vous sûr de vouloir supprimer cette sanction ?')) {
+            SCOLARIS_DATA.exclusions = SCOLARIS_DATA.exclusions.filter(e => e.id !== exclusionId);
+            sauvegarderDonnees();
+            afficherCarnetComplet();
+        }
+    }
+    
+    function modifierAbsence(absenceId) {
+        alert(\`Modifier absence \${absenceId}\`);
+    }
+    
+    function supprimerAbsence(absenceId) {
+        if (confirm('Êtes-vous sûr de vouloir supprimer cette absence ?')) {
+            SCOLARIS_DATA.absences = SCOLARIS_DATA.absences.filter(a => a.id !== absenceId);
+            sauvegarderDonnees();
+            afficherCarnetComplet();
+        }
+    }
+    
+    function modifierRetard(retardId) {
+        alert(\`Modifier retard \${retardId}\`);
+    }
+    
+    function supprimerRetard(retardId) {
+        if (confirm('Êtes-vous sûr de vouloir supprimer ce retard ?')) {
+            SCOLARIS_DATA.retards = SCOLARIS_DATA.retards.filter(r => r.id !== retardId);
+            sauvegarderDonnees();
+            afficherCarnetComplet();
+        }
+    }
+    
+    function modifierCours(coursId) {
+        alert(\`Modifier cours \${coursId}\`);
+    }
+    
+    function supprimerCours(coursId) {
+        if (confirm('Êtes-vous sûr de vouloir supprimer ce cours ?')) {
+            SCOLARIS_DATA.cours = SCOLARIS_DATA.cours.filter(c => c.id !== coursId);
+            sauvegarderDonnees();
+            afficherGestionCours();
+        }
+    }
+    
+    function exporterUtilisateurs() {
+        exporterDonnees('enseignants');
+    }
+    
+    function exporterEleves() {
+        exporterDonnees('eleves');
+    }
+    
+    function exporterClasses() {
+        exporterDonnees('classes');
+    }
+    
+    function exporterMatieres() {
+        alert('Export des matières');
+    }
+    
+    function exporterNotes() {
+        exporterDonnees('notes');
+    }
+    
+    function genererFicheElevePDF(eleveId) {
+        alert('Génération PDF fiche élève');
+    }
+    
+    function genererListeClasse(classeId) {
+        alert('Génération PDF liste classe');
+    }
+    
+    function voirNotesEleve(eleveId) {
+        alert('Voir notes élève');
+    }
+    
+    function affecterElevesClasse(classeId) {
+        alert('Affecter élèves à classe');
+    }
+    
+    function importerEleves() {
+        importerDonnees('eleves');
+    }
+    
+    function afficherMesClasses() {
+        alert('Voir mes classes (enseignant)');
+    }
+    
+    function afficherGestionDevoirs() {
+        alert('Gestion des devoirs');
+    }
+    
+    function afficherMesDevoirs() {
+        alert('Mes devoirs (élève)');
+    }
+    
+    function afficherTableauDeBordEleve() {
+        alert('Tableau de bord élève');
+    }
+    
+    function afficherMesNotes() {
+        alert('Mes notes (élève)');
+    }
+    
+    function afficherEmploiDuTempsEleve() {
+        alert('Emploi du temps élève');
+    }
+    
+    function afficherGestionEnseignants() {
+        alert('Gestion des enseignants');
+    }
+</script>
+</body>
+</html>
