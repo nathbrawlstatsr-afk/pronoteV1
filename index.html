@@ -6,20 +6,23 @@
     <title>SCOLARIS - Connexion</title>
     <style>
         :root {
-            --couleur-principale: #2C3E50;
-            --couleur-secondaire: #3498DB;
-            --couleur-accent: #E74C3C;
+            --primary: #1a237e;
+            --secondary: #3f51b5;
+            --accent: #ff4081;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --bg: #f5f5f5;
         }
         
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+            font-family: 'Inter', -apple-system, sans-serif;
         }
         
         body {
-            background: linear-gradient(135deg, var(--couleur-principale) 0%, #1A2530 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -27,332 +30,239 @@
             padding: 20px;
         }
         
-        .login-container {
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             width: 100%;
-            max-width: 450px;
+            max-width: 500px;
             overflow: hidden;
         }
         
         .login-header {
-            background-color: var(--couleur-principale);
+            background: var(--primary);
             color: white;
-            padding: 30px 20px;
+            padding: 40px 30px;
             text-align: center;
         }
         
         .login-header h1 {
-            font-size: 2rem;
-            margin-bottom: 5px;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
         }
         
         .login-content {
-            padding: 30px;
+            padding: 40px;
         }
         
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
         
-        .form-group label {
+        .form-label {
             display: block;
-            margin-bottom: 8px;
-            color: var(--couleur-principale);
-            font-weight: 500;
+            margin-bottom: 10px;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.95rem;
         }
         
-        .form-control {
+        .form-input {
             width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
             font-size: 1rem;
+            transition: all 0.3s;
         }
         
-        .form-control:focus {
+        .form-input:focus {
             outline: none;
-            border-color: var(--couleur-secondaire);
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 4px rgba(63, 81, 181, 0.1);
         }
         
-        .btn-login {
-            width: 100%;
-            padding: 14px;
-            background-color: var(--couleur-secondaire);
-            color: white;
+        .btn {
+            padding: 16px;
             border: none;
-            border-radius: 6px;
+            border-radius: 12px;
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            margin-top: 10px;
-        }
-        
-        .alert {
-            padding: 12px 15px;
-            border-radius: 6px;
-            margin-bottom: 20px;
+            transition: all 0.3s;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 10px;
         }
         
-        .alert-info {
-            background-color: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
+        .btn-primary {
+            background: var(--secondary);
+            color: white;
+            width: 100%;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-left: 5px solid var(--secondary);
         }
         
         .alert-danger {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+            border-left-color: var(--accent);
         }
         
-        .login-footer {
+        .credits {
             text-align: center;
-            padding-top: 20px;
-            margin-top: 20px;
-            font-size: 0.8rem;
+            margin-top: 30px;
             color: #666;
-        }
-        
-        .setup-link {
-            text-align: center;
-            margin-top: 15px;
-        }
-        
-        .setup-link a {
-            color: var(--couleur-secondaire);
-            text-decoration: none;
-            cursor: pointer;
+            font-size: 0.9rem;
         }
     </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="login-container" id="loginContainer">
+    <div class="login-card">
         <div class="login-header">
-            <h1 id="loginTitle">SCOLARIS</h1>
-            <div id="loginSubtitle">Plateforme de Gestion Scolaire</div>
+            <h1>SCOLARIS</h1>
+            <p>Gestion scolaire intelligente</p>
         </div>
-        
         <div class="login-content">
-            <div id="alertMessage" class="alert alert-info">
+            <div class="alert" id="alertMessage">
                 <i class="fas fa-info-circle"></i>
-                <div>
-                    <strong>Première connexion :</strong><br>
-                    Identifiant: <code>admin</code><br>
-                    Mot de passe: <code>scolaris2025</code>
-                </div>
+                <span><strong>Première connexion :</strong> admin / scolaris2025</span>
             </div>
             
             <form id="loginForm">
                 <div class="form-group">
-                    <label for="identifiant">Identifiant</label>
-                    <input type="text" id="identifiant" class="form-control" value="admin">
+                    <label class="form-label">Identifiant</label>
+                    <input type="text" class="form-input" id="identifiant" value="admin" required>
                 </div>
-                
                 <div class="form-group">
-                    <label for="password">Mot de passe</label>
-                    <input type="password" id="password" class="form-control" value="scolaris2025">
+                    <label class="form-label">Mot de passe</label>
+                    <input type="password" class="form-input" id="password" value="scolaris2025" required>
                 </div>
-                
-                <button type="submit" class="btn-login">
-                    <i class="fas fa-sign-in-alt"></i> Se connecter
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Se connecter
                 </button>
             </form>
             
-            <div class="setup-link">
-                <a onclick="showSetup()">Configurer un nouvel établissement</a>
-            </div>
-            
-            <div class="login-footer">
-                Cette plateforme est une simulation fictive à usage pédagogique.
+            <div class="credits">
+                <p>© 2024 SCOLARIS - Tous droits réservés</p>
             </div>
         </div>
     </div>
 
     <script>
-        function showSetup() {
-            document.getElementById('loginContainer').innerHTML = `
-                <div class="login-header">
-                    <h1>Configuration Initiale</h1>
-                    <div>Création d'un nouvel établissement</div>
-                </div>
-                
-                <div class="login-content">
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i>
-                        <div>Configurez votre établissement scolaire</div>
-                    </div>
-                    
-                    <form id="setupForm">
-                        <div class="form-group">
-                            <label>Nom de l'établissement *</label>
-                            <input type="text" id="etablissementNom" class="form-control" placeholder="Collège Victor Hugo" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Type d'établissement *</label>
-                            <select id="etablissementType" class="form-control" required>
-                                <option value="">Sélectionner</option>
-                                <option value="Collège public">Collège public</option>
-                                <option value="Collège privé">Collège privé</option>
-                                <option value="Lycée général">Lycée général</option>
-                                <option value="Lycée professionnel">Lycée professionnel</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Adresse *</label>
-                            <input type="text" id="etablissementAdresse" class="form-control" placeholder="12 Rue de l'Éducation" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Ville *</label>
-                            <input type="text" id="etablissementVille" class="form-control" placeholder="75000 Paris" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Téléphone</label>
-                            <input type="text" id="etablissementTelephone" class="form-control" placeholder="01 23 45 67 89">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Email</label>
-                            <input type="email" id="etablissementEmail" class="form-control" placeholder="contact@etablissement.fr">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Année scolaire *</label>
-                            <input type="text" id="etablissementAnnee" class="form-control" value="2025-2026" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Votre identifiant administrateur *</label>
-                            <input type="text" id="adminIdentifiant" class="form-control" value="admin" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Mot de passe administrateur *</label>
-                            <input type="password" id="adminPassword" class="form-control" value="scolaris2025" required>
-                        </div>
-                        
-                        <div style="display: flex; gap: 10px;">
-                            <button type="button" class="btn-login" style="background: #666;" onclick="location.reload()">Annuler</button>
-                            <button type="submit" class="btn-login"><i class="fas fa-cogs"></i> Configurer</button>
-                        </div>
-                    </form>
-                </div>
-            `;
-            
-            document.getElementById('setupForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                initialiserNouvelEtablissement();
-            });
+        const API_URL = 'https://api.jsonbin.io/v3/b/67a4e43cacd3cb34a8b4f5b1';
+        const API_KEY = '$2a$10$QePjhfYZXjA/daRY.sqpM.GmclPUUWdxMoTH6Y0QwMvSG8yjTxsu.';
+        
+        async function chargerDonnees() {
+            try {
+                const res = await fetch(API_URL, {
+                    headers: { 'X-Master-Key': API_KEY }
+                });
+                const data = await res.json();
+                return data.record;
+            } catch (e) {
+                console.error('Erreur:', e);
+                return null;
+            }
         }
         
-        function initialiserNouvelEtablissement() {
-            const donnees = {
-                system: {
-                    nom: "SCOLARIS",
-                    version: "5.0.0",
-                    etablissement: {
-                        nom: document.getElementById('etablissementNom').value,
-                        type: document.getElementById('etablissementType').value,
-                        adresse: document.getElementById('etablissementAdresse').value,
-                        ville: document.getElementById('etablissementVille').value,
-                        telephone: document.getElementById('etablissementTelephone').value,
-                        email: document.getElementById('etablissementEmail').value,
-                        annee_scolaire: document.getElementById('etablissementAnnee').value,
-                        directeur: "À nommer"
+        async function sauvegarderDonnees(donnees) {
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': API_KEY
                     },
-                    config: {
-                        theme: "default",
-                        notifications: true,
-                        export_auto: false
-                    }
-                },
-                utilisateurs: [{
-                    id: 1,
-                    nom: "Admin",
-                    prenom: "Système",
-                    role: "admin_systeme",
-                    identifiant: document.getElementById('adminIdentifiant').value,
-                    password: document.getElementById('adminPassword').value,
-                    email: document.getElementById('etablissementEmail').value || "admin@etablissement.fr",
-                    telephone: document.getElementById('etablissementTelephone').value,
-                    date_creation: new Date().toISOString().split('T')[0],
-                    actif: true,
-                    permissions: ["full_access"]
-                }],
-                roles: [
-                    { id: "admin_systeme", nom: "Administrateur système" },
-                    { id: "proviseur", nom: "Proviseur" },
-                    { id: "proviseur_adjoint", nom: "Proviseur adjoint" },
-                    { id: "cpe", nom: "Conseiller Principal d'Éducation" },
-                    { id: "secretariat", nom: "Secrétariat" },
-                    { id: "enseignant", nom: "Enseignant" },
-                    { id: "eleve", nom: "Élève" },
-                    { id: "parent", nom: "Parent" }
-                ],
-                classes: [],
-                eleves: [],
-                matieres: [],
-                cours: [],
-                notes: [],
-                observations: [],
-                exclusions: [],
-                absences: [],
-                retards: [],
-                devoirs: [],
-                emploi_du_temps: [],
-                messages: [],
-                documents: []
-            };
-            
-            localStorage.setItem('SCOLARIS_DATA', JSON.stringify(donnees));
-            alert('Établissement configuré avec succès ! Vous pouvez maintenant vous connecter.');
-            location.reload();
+                    body: JSON.stringify(donnees)
+                });
+                return res.ok;
+            } catch (e) {
+                console.error('Erreur:', e);
+                return false;
+            }
         }
         
-        // Gestion de la connexion
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const identifiant = document.getElementById('identifiant').value;
             const password = document.getElementById('password').value;
+            const alert = document.getElementById('alertMessage');
             
-            if (!localStorage.getItem('SCOLARIS_DATA')) {
-                showSetup();
+            let donnees = await chargerDonnees();
+            
+            if (!donnees || !donnees.utilisateurs) {
+                donnees = {
+                    system: {
+                        nom: "SCOLARIS",
+                        version: "2.0",
+                        etablissement: {
+                            nom: "Lycée International",
+                            ville: "Paris",
+                            annee: "2024-2025"
+                        }
+                    },
+                    utilisateurs: [{
+                        id: 1,
+                        nom: "Admin",
+                        prenom: "Système",
+                        role: "admin",
+                        identifiant: "admin",
+                        password: "scolaris2025",
+                        email: "admin@scolaris.fr",
+                        actif: true,
+                        avatar: "AS"
+                    }],
+                    eleves: [],
+                    enseignants: [],
+                    classes: [],
+                    matieres: [],
+                    cours: [],
+                    notes: [],
+                    observations: [],
+                    absences: [],
+                    devoirs: [],
+                    sanctions: []
+                };
+                
+                if (await sauvegarderDonnees(donnees)) {
+                    localStorage.setItem('SCOLARIS_USER', JSON.stringify(donnees.utilisateurs[0]));
+                    window.location.href = 'dashboard.html';
+                }
                 return;
             }
             
-            const data = JSON.parse(localStorage.getItem('SCOLARIS_DATA'));
-            const utilisateur = data.utilisateurs.find(u => 
-                u.identifiant === identifiant && u.password === password && u.actif === true
+            const user = donnees.utilisateurs.find(u => 
+                u.identifiant === identifiant && 
+                u.password === password && 
+                u.actif
             );
             
-            if (utilisateur) {
-                localStorage.setItem('SCOLARIS_USER', JSON.stringify(utilisateur));
+            if (user) {
+                localStorage.setItem('SCOLARIS_USER', JSON.stringify(user));
                 window.location.href = 'dashboard.html';
             } else {
-                const alert = document.getElementById('alertMessage');
                 alert.className = 'alert alert-danger';
-                alert.innerHTML = `<i class="fas fa-exclamation-triangle"></i><div><strong>Erreur de connexion</strong><br>Identifiant ou mot de passe incorrect</div>`;
+                alert.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Identifiants incorrects';
             }
         });
-        
-        // Afficher le nom de l'établissement si configuré
-        if (localStorage.getItem('SCOLARIS_DATA')) {
-            const data = JSON.parse(localStorage.getItem('SCOLARIS_DATA'));
-            if (data.system && data.system.etablissement) {
-                document.getElementById('loginTitle').textContent = "SCOLARIS";
-                document.getElementById('loginSubtitle').textContent = data.system.etablissement.nom;
-            }
-        }
     </script>
 </body>
 </html>
