@@ -853,7 +853,7 @@
         // ============================================
         const JSONBIN_API_URL = 'https://api.jsonbin.io/v3/b';
         let JSONBIN_API_KEY = '$2a$10$QePjhfYZXjA/daRY.sqpM.GmclPUUWdxMoTH6Y0QwMvSG8yjTxsu.';
-        let JSONBIN_BIN_ID = '69624326d0ea881f4061efc3';
+        let JSONBIN_BIN_ID = '69633ba743b1c97be92826ab';
         let SCOLARIS_DATA = null;
         let utilisateurCourant = null;
 
@@ -1567,6 +1567,199 @@
                                                         <td>${edt.salle || ''}</td>
                                                     </tr>`;
                                                 }).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+            } else if (utilisateurCourant.role === 'eleve') {
+                const eleveId = utilisateurCourant.eleve_id;
+                const eleve = SCOLARIS_DATA.eleves.find(e => e.id === eleveId);
+                const classe = eleve ? SCOLARIS_DATA.classes.find(c => c.id === eleve.classe_id) : null;
+                const notes = SCOLARIS_DATA.notes.filter(n => n.eleve_id === eleveId);
+                const moyenne = notes.length > 0 ? 
+                    (notes.reduce((sum, n) => sum + n.valeur, 0) / notes.length).toFixed(2) : 'N/A';
+                
+                contenu = `
+                    <h1 style="margin-bottom: 25px; color: var(--couleur-principale);">Mon tableau de bord</h1>
+                    
+                    <div class="cards-container">
+                        <div class="card">
+                            <div class="card-title"><i class="fas fa-graduation-cap"></i> Ma moyenne</div>
+                            <div class="card-value">${moyenne}/20</div>
+                            <div class="card-subtitle">${notes.length} notes</div>
+                        </div>
+                        <div class="card">
+                            <div class="card-title"><i class="fas fa-user-clock"></i> Mes absences</div>
+                            <div class="card-value">${SCOLARIS_DATA.absences.filter(a => a.eleve_id === eleveId).length}</div>
+                            <div class="card-subtitle">Cette année</div>
+                        </div>
+                        <div class="card">
+                            <div class="card-title"><i class="fas fa-tasks"></i> Mes devoirs</div>
+                            <div class="card-value">${SCOLARIS_DATA.devoirs.filter(d => 
+                                d.classe_id === eleve.classe_id && d.statut === 'à_rendre').length}</div>
+                            <div class="card-subtitle">À rendre</div>
+                        </div>
+                        <div class="card">
+                            <div class="card-title"><i class="fas fa-sticky-note"></i> Mes observations</div>
+                            <div class="card-value">${(SCOLARIS_DATA.observations || []).filter(o => 
+                                o.eleve_id === eleveId && o.visible_eleve !== false).length}</div>
+                            <div class="card-subtitle">Récentes</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 1;">
+                            <div class="table-container">
+                                <div class="table-header">
+                                    <div class="table-title">Mes prochains devoirs</div>
+                                </div>
+                                <div class="table-content">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Matière</th>
+                                                <th>Titre</th>
+                                                <th>À rendre pour le</th>
+                                                <th>Statut</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${SCOLARIS_DATA.devoirs
+                                                .filter(d => d.classe_id === eleve.classe_id && d.statut === 'à_rendre')
+                                                .sort((a, b) => new Date(a.date_rendu) - new Date(b.date_rendu))
+                                                .slice(0, 5)
+                                                .map(devoir => {
+                                                    const matiere = SCOLARIS_DATA.matieres.find(m => m.id === devoir.matiere_id);
+                                                    return `
+                                                    <tr>
+                                                        <td>${matiere ? matiere.nom : 'Inconnu'}</td>
+                                                        <td>${devoir.titre}</td>
+                                                        <td>${formatDate(devoir.date_rendu)}</td>
+                                                        <td><span class="badge badge-warning">À rendre</span></td>
+                                                    </tr>`;
+                                                }).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 1;">
+                            <div class="table-container">
+                                <div class="table-header">
+                                    <div class="table-title">Mes cours aujourd'hui</div>
+                                </div>
+                                <div class="table-content">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Heure</th>
+                                                <th>Matière</th>
+                                                <th>Salle</th>
+                                                <th>Professeur</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${(SCOLARIS_DATA.emploi_du_temps || [])
+                                                .filter(edt => edt.classe_id === eleve.classe_id && 
+                                                       edt.date === new Date().toISOString().split('T')[0])
+                                                .sort((a, b) => a.heure_debut.localeCompare(b.heure_debut))
+                                                .map(edt => {
+                                                    const matiere = SCOLARIS_DATA.matieres.find(m => m.id === edt.matiere_id);
+                                                    const professeur = SCOLARIS_DATA.utilisateurs.find(u => u.id === edt.professeur_id);
+                                                    return `
+                                                    <tr>
+                                                        <td>${edt.heure_debut} - ${edt.heure_fin}</td>
+                                                        <td>${matiere ? matiere.nom : ''}</td>
+                                                        <td>${edt.salle || ''}</td>
+                                                        <td>${professeur ? professeur.prenom + ' ' + professeur.nom : ''}</td>
+                                                    </tr>`;
+                                                }).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+            } else if (utilisateurCourant.role === 'parent') {
+                const enfants = SCOLARIS_DATA.eleves.filter(e => 
+                    e.responsable_1 === utilisateurCourant.nom || 
+                    e.email_responsable_1 === utilisateurCourant.email
+                );
+                
+                contenu = `
+                    <h1 style="margin-bottom: 25px; color: var(--couleur-principale);">Tableau de bord Parent</h1>
+                    
+                    <div class="cards-container">
+                        <div class="card">
+                            <div class="card-title"><i class="fas fa-child"></i> Mes enfants</div>
+                            <div class="card-value">${enfants.length}</div>
+                            <div class="card-subtitle">Inscrits</div>
+                        </div>
+                        <div class="card">
+                            <div class="card-title"><i class="fas fa-graduation-cap"></i> Moyenne générale</div>
+                            <div class="card-value">14.2/20</div>
+                            <div class="card-subtitle">Moyenne famille</div>
+                        </div>
+                        <div class="card">
+                            <div class="card-title"><i class="fas fa-user-clock"></i> Absences totales</div>
+                            <div class="card-value">${enfants.reduce((total, enfant) => {
+                                return total + SCOLARIS_DATA.absences.filter(a => a.eleve_id === enfant.id).length;
+                            }, 0)}</div>
+                            <div class="card-subtitle">Cette année</div>
+                        </div>
+                        <div class="card">
+                            <div class="card-title"><i class="fas fa-envelope"></i> Messages non lus</div>
+                            <div class="card-value">${(SCOLARIS_DATA.messages || []).filter(m => 
+                                m.destinataire_id === utilisateurCourant.id && 
+                                m.lu === false).length}</div>
+                            <div class="card-subtitle">En attente</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 2;">
+                            <div class="table-container">
+                                <div class="table-header">
+                                    <div class="table-title">Mes enfants</div>
+                                </div>
+                                <div class="table-content">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Nom</th>
+                                                <th>Prénom</th>
+                                                <th>Classe</th>
+                                                <th>Moyenne</th>
+                                                <th>Absences</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${enfants.map(enfant => {
+                                                const classe = SCOLARIS_DATA.classes.find(c => c.id === enfant.classe_id);
+                                                const notes = SCOLARIS_DATA.notes.filter(n => n.eleve_id === enfant.id);
+                                                const moyenne = notes.length > 0 ? 
+                                                    (notes.reduce((sum, n) => sum + n.valeur, 0) / notes.length).toFixed(1) : 'N/A';
+                                                const absences = SCOLARIS_DATA.absences.filter(a => a.eleve_id === enfant.id).length;
+                                                return `
+                                                <tr>
+                                                    <td>${enfant.nom}</td>
+                                                    <td>${enfant.prenom}</td>
+                                                    <td>${classe ? classe.nom : ''}</td>
+                                                    <td><strong>${moyenne}/20</strong></td>
+                                                    <td>${absences}</td>
+                                                    <td>
+                                                        <button class="btn btn-secondary btn-small" onclick="voirFicheEleveParent(${enfant.id})">
+                                                            <i class="fas fa-eye"></i> Voir
+                                                        </button>
+                                                    </td>
+                                                </tr>`;
+                                            }).join('')}
                                         </tbody>
                                     </table>
                                 </div>
@@ -2739,6 +2932,549 @@
                 afficherGestionMatieres();
             } else {
                 alert('Erreur lors de la création: ' + result.error);
+            }
+        }
+
+        // ============================================
+        // GESTION DES NOTES
+        // ============================================
+        function afficherGestionNotes() {
+            const notes = SCOLARIS_DATA.notes || [];
+            
+            document.getElementById('contenuPrincipal').innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h1 style="color: var(--couleur-principale);">Gestion des notes</h1>
+                    <button class="btn btn-primary" onclick="ouvrirModalNouvelleNote()">
+                        <i class="fas fa-plus"></i> Nouvelle note
+                    </button>
+                </div>
+                
+                <div class="cards-container" style="margin-bottom: 30px;">
+                    <div class="card">
+                        <div class="card-title">Notes enregistrées</div>
+                        <div class="card-value">${notes.length}</div>
+                        <div class="card-subtitle">Total</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Moyenne générale</div>
+                        <div class="card-value">${notes.length > 0 ? (notes.reduce((sum, n) => sum + n.valeur, 0) / notes.length).toFixed(2) : '0.00'}/20</div>
+                        <div class="card-subtitle">Établissement</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Meilleure note</div>
+                        <div class="card-value">${notes.length > 0 ? Math.max(...notes.map(n => n.valeur)).toFixed(2) : '0.00'}/20</div>
+                        <div class="card-subtitle">Maximum</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Plus basse note</div>
+                        <div class="card-value">${notes.length > 0 ? Math.min(...notes.map(n => n.valeur)).toFixed(2) : '0.00'}/20</div>
+                        <div class="card-subtitle">Minimum</div>
+                    </div>
+                </div>
+                
+                <div class="form-row" style="margin-bottom: 20px;">
+                    <div class="form-group">
+                        <select class="form-control" id="filtreNoteClasse" onchange="filtrerNotes()">
+                            <option value="">Toutes les classes</option>
+                            ${SCOLARIS_DATA.classes.map(classe => 
+                                `<option value="${classe.id}">${classe.nom}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <select class="form-control" id="filtreNoteMatiere" onchange="filtrerNotes()">
+                            <option value="">Toutes les matières</option>
+                            ${SCOLARIS_DATA.matieres.map(matiere => 
+                                `<option value="${matiere.id}">${matiere.nom}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <select class="form-control" id="filtreNotePeriode" onchange="filtrerNotes()">
+                            <option value="">Toutes les périodes</option>
+                            <option value="trimestre1">Trimestre 1</option>
+                            <option value="trimestre2">Trimestre 2</option>
+                            <option value="trimestre3">Trimestre 3</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <div class="table-header">
+                        <div class="table-title">Notes (${notes.length})</div>
+                    </div>
+                    <div class="table-content">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Élève</th>
+                                    <th>Classe</th>
+                                    <th>Matière</th>
+                                    <th>Note</th>
+                                    <th>Coefficient</th>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Commentaire</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${notes.map(note => {
+                                    const eleve = SCOLARIS_DATA.eleves.find(e => e.id === note.eleve_id);
+                                    const classe = eleve ? SCOLARIS_DATA.classes.find(c => c.id === eleve.classe_id) : null;
+                                    const matiere = SCOLARIS_DATA.matieres.find(m => m.id === note.matiere_id);
+                                    const noteClass = note.valeur < 10 ? 'badge-danger' : 
+                                                     note.valeur < 12 ? 'badge-warning' : 
+                                                     note.valeur < 14 ? 'badge-primary' : 'badge-success';
+                                    
+                                    return `
+                                    <tr>
+                                        <td>${eleve ? eleve.prenom + ' ' + eleve.nom : 'Inconnu'}</td>
+                                        <td>${classe ? classe.nom : ''}</td>
+                                        <td>${matiere ? matiere.nom : 'Inconnu'}</td>
+                                        <td><span class="badge ${noteClass}">${note.valeur.toFixed(2)}/20</span></td>
+                                        <td>${note.coefficient || 1}</td>
+                                        <td>${formatDate(note.date)}</td>
+                                        <td>${note.type || 'Contrôle'}</td>
+                                        <td>${note.commentaire ? note.commentaire.substring(0, 30) + (note.commentaire.length > 30 ? '...' : '') : ''}</td>
+                                        <td>
+                                            <div style="display: flex; gap: 5px;">
+                                                <button class="btn btn-secondary btn-small" onclick="modifierNote(${note.id})">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="btn btn-danger btn-small" onclick="supprimerNote(${note.id})">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>`;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                ${notes.length === 0 ? `
+                <div class="form-container" style="text-align: center; padding: 40px;">
+                    <i class="fas fa-graduation-cap" style="font-size: 3rem; color: #ddd; margin-bottom: 20px;"></i>
+                    <h3 style="color: #666; margin-bottom: 15px;">Aucune note enregistrée</h3>
+                    <p style="color: #888; margin-bottom: 25px;">Commencez par saisir des notes.</p>
+                    <button class="btn btn-primary" onclick="ouvrirModalNouvelleNote()">
+                        <i class="fas fa-plus"></i> Saisir la première note
+                    </button>
+                </div>` : ''}`;
+            
+            setActiveMenu('notes');
+        }
+
+        function ouvrirModalNouvelleNote() {
+            const modalHtml = `
+                <div class="modal-content" style="max-width: 800px;">
+                    <div class="modal-header">
+                        <div class="modal-title">📝 Saisir une nouvelle note</div>
+                        <button class="modal-close" onclick="fermerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formNouvelleNote">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Élève *</label>
+                                    <select class="form-control" id="noteEleve" required>
+                                        <option value="">Sélectionner un élève</option>
+                                        ${SCOLARIS_DATA.eleves.map(eleve => 
+                                            `<option value="${eleve.id}">${eleve.prenom} ${eleve.nom} - ${eleve.classe || 'Non affecté'}</option>`
+                                        ).join('')}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Matière *</label>
+                                    <select class="form-control" id="noteMatiere" required>
+                                        <option value="">Sélectionner une matière</option>
+                                        ${SCOLARIS_DATA.matieres.map(matiere => 
+                                            `<option value="${matiere.id}">${matiere.nom}</option>`
+                                        ).join('')}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Note *</label>
+                                    <input type="number" class="form-control" id="noteValeur" min="0" max="20" step="0.25" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Coefficient *</label>
+                                    <input type="number" class="form-control" id="noteCoefficient" min="0.5" max="5" step="0.5" value="1" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Type d'évaluation *</label>
+                                    <select class="form-control" id="noteType" required>
+                                        <option value="Contrôle">Contrôle</option>
+                                        <option value="Devoir maison">Devoir maison</option>
+                                        <option value="Interrogation">Interrogation</option>
+                                        <option value="Oral">Oral</option>
+                                        <option value="Projet">Projet</option>
+                                        <option value="Participation">Participation</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Date *</label>
+                                    <input type="date" class="form-control" id="noteDate" 
+                                           value="${new Date().toISOString().split('T')[0]}" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Période</label>
+                                    <select class="form-control" id="notePeriode">
+                                        <option value="trimestre1">Trimestre 1</option>
+                                        <option value="trimestre2" selected>Trimestre 2</option>
+                                        <option value="trimestre3">Trimestre 3</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Commentaire</label>
+                                    <textarea class="form-control" id="noteCommentaire" rows="3" 
+                                              placeholder="Remarques sur l'évaluation..."></textarea>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="fermerModal()">Annuler</button>
+                        <button class="btn btn-primary" onclick="creerNouvelleNote()">
+                            <i class="fas fa-save"></i> Enregistrer la note
+                        </button>
+                    </div>
+                </div>`;
+            
+            ouvrirModal(modalHtml);
+        }
+
+        async function creerNouvelleNote() {
+            const eleveId = parseInt(document.getElementById('noteEleve').value);
+            const matiereId = parseInt(document.getElementById('noteMatiere').value);
+            const valeur = parseFloat(document.getElementById('noteValeur').value);
+            const coefficient = parseFloat(document.getElementById('noteCoefficient').value);
+            const type = document.getElementById('noteType').value;
+            const date = document.getElementById('noteDate').value;
+            const periode = document.getElementById('notePeriode').value;
+            const commentaire = document.getElementById('noteCommentaire').value;
+            
+            if (!eleveId || !matiereId || isNaN(valeur) || isNaN(coefficient) || !type || !date) {
+                alert('Veuillez remplir tous les champs obligatoires (*)');
+                return;
+            }
+            
+            if (valeur < 0 || valeur > 20) {
+                alert('La note doit être comprise entre 0 et 20');
+                return;
+            }
+            
+            const nouvelId = Math.max(...SCOLARIS_DATA.notes.map(n => n.id), 0) + 1;
+            const nouvelleNote = {
+                id: nouvelId,
+                eleve_id: eleveId,
+                matiere_id: matiereId,
+                valeur: valeur,
+                coefficient: coefficient,
+                type: type,
+                date: date,
+                periode: periode,
+                commentaire: commentaire,
+                saisie_par: utilisateurCourant.id,
+                date_saisie: new Date().toISOString()
+            };
+            
+            SCOLARIS_DATA.notes.push(nouvelleNote);
+            const result = await sauvegarderDonnees(SCOLARIS_DATA);
+            
+            if (result.success) {
+                alert('Note enregistrée avec succès !');
+                fermerModal();
+                afficherGestionNotes();
+            } else {
+                alert('Erreur lors de l\'enregistrement: ' + result.error);
+            }
+        }
+
+        // ============================================
+        // GESTION DES ABSENCES
+        // ============================================
+        function afficherGestionAbsences() {
+            const absences = SCOLARIS_DATA.absences || [];
+            
+            document.getElementById('contenuPrincipal').innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h1 style="color: var(--couleur-principale);">Gestion des absences</h1>
+                    <button class="btn btn-primary" onclick="ouvrirModalNouvelleAbsence()">
+                        <i class="fas fa-plus"></i> Nouvelle absence
+                    </button>
+                </div>
+                
+                <div class="cards-container" style="margin-bottom: 30px;">
+                    <div class="card">
+                        <div class="card-title">Absences aujourd'hui</div>
+                        <div class="card-value">${absences.filter(a => a.date === new Date().toISOString().split('T')[0]).length}</div>
+                        <div class="card-subtitle">Élèves absents</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Absences ce mois</div>
+                        <div class="card-value">${absences.filter(a => {
+                            const dateAbs = new Date(a.date);
+                            const now = new Date();
+                            return dateAbs.getMonth() === now.getMonth() && dateAbs.getFullYear() === now.getFullYear();
+                        }).length}</div>
+                        <div class="card-subtitle">Cumul mensuel</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Retards aujourd'hui</div>
+                        <div class="card-value">${SCOLARIS_DATA.retards.filter(r => r.date === new Date().toISOString().split('T')[0]).length}</div>
+                        <div class="card-subtitle">Élèves en retard</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Justifiées</div>
+                        <div class="card-value">${absences.filter(a => a.justifiee).length}</div>
+                        <div class="card-subtitle">Absences justifiées</div>
+                    </div>
+                </div>
+                
+                <div class="form-row" style="margin-bottom: 20px;">
+                    <div class="form-group">
+                        <input type="date" class="form-control" id="filtreAbsenceDate" 
+                               value="${new Date().toISOString().split('T')[0]}" onchange="filtrerAbsences()">
+                    </div>
+                    <div class="form-group">
+                        <select class="form-control" id="filtreAbsenceClasse" onchange="filtrerAbsences()">
+                            <option value="">Toutes les classes</option>
+                            ${SCOLARIS_DATA.classes.map(classe => 
+                                `<option value="${classe.id}">${classe.nom}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <select class="form-control" id="filtreAbsenceJustifiee" onchange="filtrerAbsences()">
+                            <option value="">Toutes</option>
+                            <option value="oui">Justifiées</option>
+                            <option value="non">Non justifiées</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <div class="table-header">
+                        <div class="table-title">Absences (${absences.length})</div>
+                    </div>
+                    <div class="table-content">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Élève</th>
+                                    <th>Classe</th>
+                                    <th>Date</th>
+                                    <th>Heures</th>
+                                    <th>Justifiée</th>
+                                    <th>Motif</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${absences.map(absence => {
+                                    const eleve = SCOLARIS_DATA.eleves.find(e => e.id === absence.eleve_id);
+                                    const classe = eleve ? SCOLARIS_DATA.classes.find(c => c.id === eleve.classe_id) : null;
+                                    const justifieeBadge = absence.justifiee ? 
+                                        '<span class="badge badge-success">Oui</span>' : 
+                                        '<span class="badge badge-danger">Non</span>';
+                                    
+                                    return `
+                                    <tr>
+                                        <td>${eleve ? eleve.prenom + ' ' + eleve.nom : 'Inconnu'}</td>
+                                        <td>${classe ? classe.nom : ''}</td>
+                                        <td>${formatDate(absence.date)}</td>
+                                        <td>${absence.heures_absences || 'Toute la journée'}</td>
+                                        <td>${justifieeBadge}</td>
+                                        <td>${absence.motif ? absence.motif.substring(0, 30) + (absence.motif.length > 30 ? '...' : '') : ''}</td>
+                                        <td>
+                                            <div style="display: flex; gap: 5px;">
+                                                <button class="btn btn-secondary btn-small" onclick="modifierAbsence(${absence.id})">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="btn btn-danger btn-small" onclick="supprimerAbsence(${absence.id})">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>`;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                ${absences.length === 0 ? `
+                <div class="form-container" style="text-align: center; padding: 40px;">
+                    <i class="fas fa-user-clock" style="font-size: 3rem; color: #ddd; margin-bottom: 20px;"></i>
+                    <h3 style="color: #666; margin-bottom: 15px;">Aucune absence enregistrée</h3>
+                    <p style="color: #888; margin-bottom: 25px;">Les absences apparaîtront ici.</p>
+                </div>` : ''}`;
+            
+            setActiveMenu('absences');
+        }
+
+        function ouvrirModalNouvelleAbsence() {
+            const modalHtml = `
+                <div class="modal-content" style="max-width: 800px;">
+                    <div class="modal-header">
+                        <div class="modal-title">⏰ Saisir une absence</div>
+                        <button class="modal-close" onclick="fermerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formNouvelleAbsence">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Élève *</label>
+                                    <select class="form-control" id="absenceEleve" required>
+                                        <option value="">Sélectionner un élève</option>
+                                        ${SCOLARIS_DATA.eleves.map(eleve => 
+                                            `<option value="${eleve.id}">${eleve.prenom} ${eleve.nom} - ${eleve.classe || 'Non affecté'}</option>`
+                                        ).join('')}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Date *</label>
+                                    <input type="date" class="form-control" id="absenceDate" 
+                                           value="${new Date().toISOString().split('T')[0]}" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Type *</label>
+                                    <div style="display: flex; gap: 20px; margin-top: 10px;">
+                                        <label>
+                                            <input type="radio" name="typeAbsence" value="complet" checked>
+                                            <span>Absence complète</span>
+                                        </label>
+                                        <label>
+                                            <input type="radio" name="typeAbsence" value="partiel">
+                                            <span>Absence partielle</span>
+                                        </label>
+                                        <label>
+                                            <input type="radio" name="typeAbsence" value="retard">
+                                            <span>Retard</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row" id="champsHeuresAbsence" style="display: none;">
+                                <div class="form-group">
+                                    <label>Heures d'absence</label>
+                                    <input type="text" class="form-control" id="absenceHeures" 
+                                           placeholder="Ex: 8h30-10h30, 14h-15h">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Motif *</label>
+                                    <textarea class="form-control" id="absenceMotif" rows="3" required 
+                                              placeholder="Raison de l'absence..."></textarea>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label><input type="checkbox" id="absenceJustifiee"> Absence justifiée</label>
+                                </div>
+                                <div class="form-group">
+                                    <label>Pièce justificative</label>
+                                    <input type="text" class="form-control" id="absencePiece" 
+                                           placeholder="Ex: Certificat médical n°...">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="fermerModal()">Annuler</button>
+                        <button class="btn btn-primary" onclick="creerNouvelleAbsence()">
+                            <i class="fas fa-save"></i> Enregistrer l'absence
+                        </button>
+                    </div>
+                </div>`;
+            
+            ouvrirModal(modalHtml);
+            
+            document.querySelectorAll('input[name="typeAbsence"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const champsHeures = document.getElementById('champsHeuresAbsence');
+                    champsHeures.style.display = this.value === 'partiel' ? 'block' : 'none';
+                });
+            });
+        }
+
+        async function creerNouvelleAbsence() {
+            const eleveId = parseInt(document.getElementById('absenceEleve').value);
+            const date = document.getElementById('absenceDate').value;
+            const type = document.querySelector('input[name="typeAbsence"]:checked').value;
+            const motif = document.getElementById('absenceMotif').value;
+            const justifiee = document.getElementById('absenceJustifiee').checked;
+            const piece = document.getElementById('absencePiece').value;
+            
+            if (!eleveId || !date || !motif) {
+                alert('Veuillez remplir tous les champs obligatoires (*)');
+                return;
+            }
+            
+            if (type === 'retard') {
+                // Créer un retard plutôt qu'une absence
+                const nouvelId = Math.max(...SCOLARIS_DATA.retards.map(r => r.id), 0) + 1;
+                const nouveauRetard = {
+                    id: nouvelId,
+                    eleve_id: eleveId,
+                    date: date,
+                    duree: document.getElementById('absenceHeures').value || 'Non précisée',
+                    motif: motif,
+                    justifie: justifiee,
+                    piece_justificative: piece,
+                    enregistre_par: utilisateurCourant.id,
+                    date_enregistrement: new Date().toISOString()
+                };
+                
+                SCOLARIS_DATA.retards.push(nouveauRetard);
+            } else {
+                const nouvelId = Math.max(...SCOLARIS_DATA.absences.map(a => a.id), 0) + 1;
+                const nouvelleAbsence = {
+                    id: nouvelId,
+                    eleve_id: eleveId,
+                    date: date,
+                    type: type,
+                    heures_absences: type === 'partiel' ? document.getElementById('absenceHeures').value : null,
+                    motif: motif,
+                    justifiee: justifiee,
+                    piece_justificative: piece,
+                    enregistre_par: utilisateurCourant.id,
+                    date_enregistrement: new Date().toISOString()
+                };
+                
+                SCOLARIS_DATA.absences.push(nouvelleAbsence);
+            }
+            
+            const result = await sauvegarderDonnees(SCOLARIS_DATA);
+            
+            if (result.success) {
+                alert(type === 'retard' ? 'Retard enregistré avec succès !' : 'Absence enregistrée avec succès !');
+                fermerModal();
+                afficherGestionAbsences();
+            } else {
+                alert('Erreur lors de l\'enregistrement: ' + result.error);
             }
         }
 
@@ -4526,6 +5262,34 @@
             alert('Modification du cours (simulation)');
         }
 
+        function modifierNote(noteId) {
+            alert('Modification de la note (simulation)');
+        }
+
+        function supprimerNote(noteId) {
+            if (confirm('Supprimer cette note ?')) {
+                alert('Note supprimée (simulation)');
+            }
+        }
+
+        function modifierAbsence(absenceId) {
+            alert('Modification de l\'absence (simulation)');
+        }
+
+        function supprimerAbsence(absenceId) {
+            if (confirm('Supprimer cette absence ?')) {
+                alert('Absence supprimée (simulation)');
+            }
+        }
+
+        function filtrerNotes() {
+            alert('Filtrage des notes (simulation)');
+        }
+
+        function filtrerAbsences() {
+            alert('Filtrage des absences (simulation)');
+        }
+
         // ============================================
         // FONCTIONS POUR LES AUTRES RÔLES
         // ============================================
@@ -4563,7 +5327,7 @@
             setActiveMenu('mes_classes');
         }
 
-        function afficherTableauDeBordEleve() {
+        function afficherMesNotes() {
             const eleveId = utilisateurCourant.eleve_id;
             const eleve = SCOLARIS_DATA.eleves.find(e => e.id === eleveId);
             
@@ -4577,81 +5341,746 @@
                 return;
             }
             
+            const notes = SCOLARIS_DATA.notes.filter(n => n.eleve_id === eleveId);
+            const moyenneGenerale = notes.length > 0 ? 
+                (notes.reduce((sum, n) => sum + n.valeur, 0) / notes.length).toFixed(2) : 'N/A';
+            
+            // Calculer la moyenne par matière
+            const notesParMatiere = {};
+            notes.forEach(note => {
+                if (!notesParMatiere[note.matiere_id]) {
+                    notesParMatiere[note.matiere_id] = [];
+                }
+                notesParMatiere[note.matiere_id].push(note);
+            });
+            
+            document.getElementById('contenuPrincipal').innerHTML = `
+                <h1 style="margin-bottom: 25px; color: var(--couleur-principale);">Mes notes</h1>
+                
+                <div class="cards-container">
+                    <div class="card">
+                        <div class="card-title">Moyenne générale</div>
+                        <div class="card-value">${moyenneGenerale}/20</div>
+                        <div class="card-subtitle">${notes.length} notes</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Meilleure note</div>
+                        <div class="card-value">${notes.length > 0 ? Math.max(...notes.map(n => n.valeur)).toFixed(2) : '0.00'}/20</div>
+                        <div class="card-subtitle">Maximum</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Plus basse note</div>
+                        <div class="card-value">${notes.length > 0 ? Math.min(...notes.map(n => n.valeur)).toFixed(2) : '0.00'}/20</div>
+                        <div class="card-subtitle">Minimum</div>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <div class="table-header">
+                        <div class="table-title">Mes notes par matière</div>
+                    </div>
+                    <div class="table-content">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Matière</th>
+                                    <th>Nombre de notes</th>
+                                    <th>Moyenne</th>
+                                    <th>Dernière note</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${Object.entries(notesParMatiere).map(([matiereId, notesMatiere]) => {
+                                    const matiere = SCOLARIS_DATA.matieres.find(m => m.id === parseInt(matiereId));
+                                    const moyenneMatiere = (notesMatiere.reduce((sum, n) => sum + n.valeur, 0) / notesMatiere.length).toFixed(2);
+                                    const derniereNote = notesMatiere.sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+                                    const noteClass = moyenneMatiere < 10 ? 'badge-danger' : 
+                                                     moyenneMatiere < 12 ? 'badge-warning' : 
+                                                     moyenneMatiere < 14 ? 'badge-primary' : 'badge-success';
+                                    
+                                    return `
+                                    <tr>
+                                        <td><strong>${matiere ? matiere.nom : 'Inconnu'}</strong></td>
+                                        <td>${notesMatiere.length}</td>
+                                        <td><span class="badge ${noteClass}">${moyenneMatiere}/20</span></td>
+                                        <td>${derniereNote ? derniereNote.valeur.toFixed(2) + '/20 (' + formatDate(derniereNote.date) + ')' : 'Aucune'}</td>
+                                        <td>
+                                            <button class="btn btn-secondary btn-small" onclick="voirNotesMatiere(${matiereId})">
+                                                <i class="fas fa-eye"></i> Voir
+                                            </button>
+                                        </td>
+                                    </tr>`;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>`;
+            
+            setActiveMenu('mes_notes');
+        }
+
+        function afficherEmploiDuTempsEleve() {
+            const eleveId = utilisateurCourant.eleve_id;
+            const eleve = SCOLARIS_DATA.eleves.find(e => e.id === eleveId);
+            
+            if (!eleve) {
+                document.getElementById('contenuPrincipal').innerHTML = `
+                    <div class="form-container" style="text-align: center; padding: 40px;">
+                        <i class="fas fa-user-graduate" style="font-size: 3rem; color: #ddd; margin-bottom: 20px;"></i>
+                        <h3 style="color: #666; margin-bottom: 15px;">Profil élève non trouvé</h3>
+                        <p style="color: #888;">Contactez l'administration.</p>
+                    </div>`;
+                return;
+            }
+            
+            const emploi = SCOLARIS_DATA.emploi_du_temps || [];
+            const coursClasse = emploi.filter(e => e.classe_id === eleve.classe_id);
+            const jours = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi'];
+            const creneaux = ['8:30-9:30', '9:30-10:30', '10:45-11:45', '13:30-14:30', '14:30-15:30', '15:45-16:45'];
+            
+            document.getElementById('contenuPrincipal').innerHTML = `
+                <h1 style="margin-bottom: 25px; color: var(--couleur-principale);">Mon emploi du temps</h1>
+                
+                <div class="emploi-container">
+                    <div class="emploi-cell emploi-header">Heure</div>
+                    ${jours.map(jour => `<div class="emploi-cell emploi-header">${jour.charAt(0).toUpperCase() + jour.slice(1)}</div>`).join('')}
+                    
+                    ${creneaux.map((creneau, index) => {
+                        return `
+                        <div class="emploi-cell emploi-header">${creneau}</div>
+                        ${jours.map(jour => {
+                            const cours = coursClasse.find(c => 
+                                c.jour === jour && c.creneau === index
+                            );
+                            
+                            if (cours) {
+                                const matiere = SCOLARIS_DATA.matieres.find(m => m.id === cours.matiere_id);
+                                const professeur = SCOLARIS_DATA.utilisateurs.find(u => u.id === cours.professeur_id);
+                                return `
+                                <div class="emploi-cell">
+                                    <div class="emploi-creneau" style="border-left-color: ${matiere ? matiere.couleur : '#3498DB'}">
+                                        <strong>${matiere ? matiere.nom.substring(0, 15) : 'Cours'}</strong><br>
+                                        <small>${professeur ? professeur.prenom.charAt(0) + '. ' + professeur.nom : ''}</small><br>
+                                        <small>${cours.salle || ''}</small>
+                                    </div>
+                                </div>`;
+                            } else {
+                                return `<div class="emploi-cell"></div>`;
+                            }
+                        }).join('')}`;
+                    }).join('')}
+                </div>`;
+            
+            setActiveMenu('emploi_temps');
+        }
+
+        function afficherMesDevoirs() {
+            const eleveId = utilisateurCourant.eleve_id;
+            const eleve = SCOLARIS_DATA.eleves.find(e => e.id === eleveId);
+            
+            if (!eleve) {
+                document.getElementById('contenuPrincipal').innerHTML = `
+                    <div class="form-container" style="text-align: center; padding: 40px;">
+                        <i class="fas fa-user-graduate" style="font-size: 3rem; color: #ddd; margin-bottom: 20px;"></i>
+                        <h3 style="color: #666; margin-bottom: 15px;">Profil élève non trouvé</h3>
+                        <p style="color: #888;">Contactez l'administration.</p>
+                    </div>`;
+                return;
+            }
+            
+            const devoirs = SCOLARIS_DATA.devoirs.filter(d => d.classe_id === eleve.classe_id);
+            const devoirsARendre = devoirs.filter(d => d.statut === 'à_rendre');
+            const devoirsRendus = devoirs.filter(d => d.statut === 'rendu' || d.statut === 'corrigé');
+            
+            document.getElementById('contenuPrincipal').innerHTML = `
+                <h1 style="margin-bottom: 25px; color: var(--couleur-principale);">Mes devoirs</h1>
+                
+                <div class="cards-container">
+                    <div class="card">
+                        <div class="card-title">À rendre</div>
+                        <div class="card-value">${devoirsARendre.length}</div>
+                        <div class="card-subtitle">En attente</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Rendus</div>
+                        <div class="card-value">${devoirsRendus.length}</div>
+                        <div class="card-subtitle">Terminés</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">En retard</div>
+                        <div class="card-value">${devoirsARendre.filter(d => new Date(d.date_rendu) < new Date()).length}</div>
+                        <div class="card-subtitle">Retard</div>
+                    </div>
+                </div>
+                
+                <div class="tabs">
+                    <div class="tab active" onclick="changerOngletDevoirsEleve('à_rendre')">À rendre</div>
+                    <div class="tab" onclick="changerOngletDevoirsEleve('rendu')">Rendus</div>
+                    <div class="tab" onclick="changerOngletDevoirsEleve('corrigé')">Corrigés</div>
+                </div>
+                
+                <div id="contenuDevoirsEleve">
+                    <div class="table-container">
+                        <div class="table-header">
+                            <div class="table-title">Devoirs à rendre (${devoirsARendre.length})</div>
+                        </div>
+                        <div class="table-content">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Matière</th>
+                                        <th>Titre</th>
+                                        <th>À rendre pour le</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${devoirsARendre.sort((a, b) => new Date(a.date_rendu) - new Date(b.date_rendu))
+                                        .map(devoir => {
+                                            const matiere = SCOLARIS_DATA.matieres.find(m => m.id === devoir.matiere_id);
+                                            const estEnRetard = new Date(devoir.date_rendu) < new Date();
+                                            const statutBadge = estEnRetard ? 
+                                                '<span class="badge badge-danger">En retard</span>' : 
+                                                '<span class="badge badge-warning">À rendre</span>';
+                                            
+                                            return `
+                                            <tr>
+                                                <td>${matiere ? matiere.nom : 'Inconnu'}</td>
+                                                <td>${devoir.titre}</td>
+                                                <td>${formatDate(devoir.date_rendu)}</td>
+                                                <td>${statutBadge}</td>
+                                                <td>
+                                                    <button class="btn btn-secondary btn-small" onclick="voirDetailsDevoirEleve(${devoir.id})">
+                                                        <i class="fas fa-eye"></i> Voir
+                                                    </button>
+                                                </td>
+                                            </tr>`;
+                                        }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>`;
+            
+            setActiveMenu('mes_devoirs');
+        }
+
+        function afficherMesObservations() {
+            const eleveId = utilisateurCourant.eleve_id;
+            const observations = (SCOLARIS_DATA.observations || []).filter(o => 
+                o.eleve_id === eleveId && o.visible_eleve !== false
+            );
+            
+            document.getElementById('contenuPrincipal').innerHTML = `
+                <h1 style="margin-bottom: 25px; color: var(--couleur-principale);">Mes observations</h1>
+                
+                <div class="cards-container">
+                    <div class="card">
+                        <div class="card-title">Observations positives</div>
+                        <div class="card-value">${observations.filter(o => o.type === 'positive').length}</div>
+                        <div class="card-subtitle">Encouragements</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Observations négatives</div>
+                        <div class="card-value">${observations.filter(o => o.type === 'negative').length}</div>
+                        <div class="card-subtitle">À améliorer</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Observations neutres</div>
+                        <div class="card-value">${observations.filter(o => o.type === 'neutre').length}</div>
+                        <div class="card-subtitle">Informatives</div>
+                    </div>
+                </div>
+                
+                <div id="listeMesObservations">
+                    ${observations.length > 0 ? observations.map(observation => {
+                        const matiere = observation.matiere_id ? 
+                            SCOLARIS_DATA.matieres.find(m => m.id === observation.matiere_id) : null;
+                        const typeClass = observation.type === 'positive' ? 'observation-positive' : 
+                                         observation.type === 'negative' ? 'observation-negative' : 'observation-neutre';
+                        const typeIcon = observation.type === 'positive' ? 'fa-thumbs-up' : 
+                                        observation.type === 'negative' ? 'fa-thumbs-down' : 'fa-minus';
+                        const typeColor = observation.type === 'positive' ? '#27AE60' : 
+                                         observation.type === 'negative' ? '#E74C3C' : '#95A5A6';
+                        
+                        return `
+                        <div class="observation-card ${typeClass}">
+                            <div class="cours-header">
+                                <div>
+                                    <i class="fas ${typeIcon}" style="color: ${typeColor}; margin-right: 8px;"></i>
+                                    <strong>${observation.titre}</strong>
+                                    ${matiere ? ' - ' + matiere.nom : ''}
+                                </div>
+                                <div class="cours-horaire">${formatDate(observation.date)}</div>
+                            </div>
+                            <p style="color: #666; margin-top: 10px;">${observation.description}</p>
+                            <div style="margin-top: 10px; font-size: 0.9rem; color: #888;">
+                                Par ${observation.auteur_nom || 'Inconnu'}
+                            </div>
+                        </div>`;
+                    }).join('') : `
+                    <div class="form-container" style="text-align: center; padding: 40px;">
+                        <i class="fas fa-sticky-note" style="font-size: 3rem; color: #ddd; margin-bottom: 20px;"></i>
+                        <h3 style="color: #666; margin-bottom: 15px;">Aucune observation</h3>
+                        <p style="color: #888; margin-bottom: 25px;">Vos observations apparaîtront ici.</p>
+                    </div>`}
+                </div>`;
+            
+            setActiveMenu('mes_observations');
+        }
+
+        // ============================================
+        // FONCTIONS POUR LES PARENTS
+        // ============================================
+        function afficherEnfants() {
+            const enfants = SCOLARIS_DATA.eleves.filter(e => 
+                e.responsable_1 === utilisateurCourant.nom || 
+                e.email_responsable_1 === utilisateurCourant.email
+            );
+            
+            document.getElementById('contenuPrincipal').innerHTML = `
+                <h1 style="margin-bottom: 25px; color: var(--couleur-principale);">Mes enfants</h1>
+                
+                <div class="cards-container">
+                    ${enfants.map(enfant => {
+                        const classe = SCOLARIS_DATA.classes.find(c => c.id === enfant.classe_id);
+                        const notes = SCOLARIS_DATA.notes.filter(n => n.eleve_id === enfant.id);
+                        const moyenne = notes.length > 0 ? 
+                            (notes.reduce((sum, n) => sum + n.valeur, 0) / notes.length).toFixed(1) : 'N/A';
+                        const absences = SCOLARIS_DATA.absences.filter(a => a.eleve_id === enfant.id).length;
+                        const observations = (SCOLARIS_DATA.observations || []).filter(o => o.eleve_id === enfant.id).length;
+                        
+                        return `
+                        <div class="card" onclick="voirFicheEleveParent(${enfant.id})" style="cursor: pointer;">
+                            <div class="card-title">${enfant.prenom} ${enfant.nom}</div>
+                            <div class="card-value">${classe ? classe.nom : 'Non affecté'}</div>
+                            <div class="card-subtitle">Classe</div>
+                            <div style="margin-top: 15px;">
+                                <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                                    <div>
+                                        <i class="fas fa-graduation-cap"></i> ${moyenne}/20
+                                    </div>
+                                    <div>
+                                        <i class="fas fa-user-clock"></i> ${absences}
+                                    </div>
+                                    <div>
+                                        <i class="fas fa-sticky-note"></i> ${observations}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                    }).join('')}
+                </div>
+                
+                ${enfants.length === 0 ? `
+                <div class="form-container" style="text-align: center; padding: 40px;">
+                    <i class="fas fa-child" style="font-size: 3rem; color: #ddd; margin-bottom: 20px;"></i>
+                    <h3 style="color: #666; margin-bottom: 15px;">Aucun enfant associé</h3>
+                    <p style="color: #888; margin-bottom: 25px;">Contactez l'établissement pour associer vos enfants.</p>
+                </div>` : ''}`;
+            
+            setActiveMenu('enfants');
+        }
+
+        function voirFicheEleveParent(eleveId) {
+            const eleve = SCOLARIS_DATA.eleves.find(e => e.id === eleveId);
+            if (!eleve) return;
+            
             const classe = SCOLARIS_DATA.classes.find(c => c.id === eleve.classe_id);
             const notes = SCOLARIS_DATA.notes.filter(n => n.eleve_id === eleveId);
             const moyenne = notes.length > 0 ? 
                 (notes.reduce((sum, n) => sum + n.valeur, 0) / notes.length).toFixed(2) : 'N/A';
+            const absences = SCOLARIS_DATA.absences.filter(a => a.eleve_id === eleveId);
+            const observations = (SCOLARIS_DATA.observations || []).filter(o => o.eleve_id === eleveId);
+            
+            const modalHtml = `
+                <div class="modal-content" style="max-width: 800px;">
+                    <div class="modal-header">
+                        <div class="modal-title">👨‍👦 Fiche de ${eleve.prenom} ${eleve.nom}</div>
+                        <button class="modal-close" onclick="fermerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div style="display: flex; gap: 30px; margin-bottom: 25px;">
+                            <div style="flex: 1;">
+                                <h4 style="color: var(--couleur-principale); margin-bottom: 15px;">Informations</h4>
+                                <p><strong>Classe :</strong> ${classe ? classe.nom : 'Non affecté'}</p>
+                                <p><strong>Professeur principal :</strong> ${classe ? classe.prof_principal : 'Non attribué'}</p>
+                                <p><strong>Moyenne générale :</strong> <strong>${moyenne}/20</strong></p>
+                                <p><strong>Absences cette année :</strong> ${absences.length}</p>
+                                <p><strong>Observations :</strong> ${observations.length}</p>
+                            </div>
+                            <div style="flex: 1;">
+                                <h4 style="color: var(--couleur-principale); margin-bottom: 15px;">Contact</h4>
+                                <p><strong>Téléphone classe :</strong> ${SCOLARIS_DATA.system.etablissement.telephone || 'Non renseigné'}</p>
+                                <p><strong>Email établissement :</strong> ${SCOLARIS_DATA.system.etablissement.email || 'Non renseigné'}</p>
+                                <p><strong>Salle :</strong> ${classe ? classe.salle || 'Non attribuée' : ''}</p>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 20px;">
+                            <h4 style="color: var(--couleur-principale); margin-bottom: 15px;">Actions</h4>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <button class="btn btn-primary" onclick="voirNotesEnfant(${eleveId})">
+                                    <i class="fas fa-graduation-cap"></i> Voir les notes
+                                </button>
+                                <button class="btn btn-secondary" onclick="voirAbsencesEnfant(${eleveId})">
+                                    <i class="fas fa-user-clock"></i> Voir les absences
+                                </button>
+                                <button class="btn btn-secondary" onclick="voirObservationsEnfant(${eleveId})">
+                                    <i class="fas fa-sticky-note"></i> Voir les observations
+                                </button>
+                                <button class="btn btn-secondary" onclick="voirEmploiEnfant(${eleveId})">
+                                    <i class="fas fa-calendar-alt"></i> Emploi du temps
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="fermerModal()">Fermer</button>
+                    </div>
+                </div>`;
+            
+            ouvrirModal(modalHtml);
+        }
+
+        function afficherNotesEnfants() {
+            const enfants = SCOLARIS_DATA.eleves.filter(e => 
+                e.responsable_1 === utilisateurCourant.nom || 
+                e.email_responsable_1 === utilisateurCourant.email
+            );
             
             document.getElementById('contenuPrincipal').innerHTML = `
-                <h1 style="margin-bottom: 25px; color: var(--couleur-principale);">Mon tableau de bord</h1>
+                <h1 style="margin-bottom: 25px; color: var(--couleur-principale);">Notes de mes enfants</h1>
                 
-                <div class="cards-container">
-                    <div class="card">
-                        <div class="card-title"><i class="fas fa-graduation-cap"></i> Ma moyenne</div>
-                        <div class="card-value">${moyenne}/20</div>
-                        <div class="card-subtitle">${notes.length} notes</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title"><i class="fas fa-user-clock"></i> Mes absences</div>
-                        <div class="card-value">${SCOLARIS_DATA.absences.filter(a => a.eleve_id === eleveId).length}</div>
-                        <div class="card-subtitle">Cette année</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title"><i class="fas fa-tasks"></i> Mes devoirs</div>
-                        <div class="card-value">${SCOLARIS_DATA.devoirs.filter(d => 
-                            d.classe_id === eleve.classe_id && d.statut === 'à_rendre').length}</div>
-                        <div class="card-subtitle">À rendre</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title"><i class="fas fa-sticky-note"></i> Mes observations</div>
-                        <div class="card-value">${(SCOLARIS_DATA.observations || []).filter(o => 
-                            o.eleve_id === eleveId && o.visible_eleve !== false).length}</div>
-                        <div class="card-subtitle">Récentes</div>
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group" style="flex: 1;">
-                        <div class="table-container">
-                            <div class="table-header">
-                                <div class="table-title">Mes prochains devoirs</div>
+                ${enfants.map(enfant => {
+                    const classe = SCOLARIS_DATA.classes.find(c => c.id === enfant.classe_id);
+                    const notes = SCOLARIS_DATA.notes.filter(n => n.eleve_id === enfant.id);
+                    const moyenne = notes.length > 0 ? 
+                        (notes.reduce((sum, n) => sum + n.valeur, 0) / notes.length).toFixed(2) : 'N/A';
+                    
+                    // Calculer la moyenne par matière
+                    const notesParMatiere = {};
+                    notes.forEach(note => {
+                        if (!notesParMatiere[note.matiere_id]) {
+                            notesParMatiere[note.matiere_id] = [];
+                        }
+                        notesParMatiere[note.matiere_id].push(note);
+                    });
+                    
+                    return `
+                    <div class="form-container" style="margin-bottom: 30px;">
+                        <h3 class="form-title">${enfant.prenom} ${enfant.nom} - ${classe ? classe.nom : ''}</h3>
+                        <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                            <div style="font-size: 1.5rem; font-weight: bold; color: var(--couleur-principale); margin-right: 20px;">
+                                Moyenne : ${moyenne}/20
                             </div>
+                            <div style="font-size: 0.9rem; color: #666;">
+                                ${notes.length} notes enregistrées
+                            </div>
+                        </div>
+                        
+                        <div class="table-container">
                             <div class="table-content">
                                 <table>
                                     <thead>
                                         <tr>
                                             <th>Matière</th>
-                                            <th>Titre</th>
-                                            <th>À rendre pour le</th>
-                                            <th>Statut</th>
+                                            <th>Moyenne</th>
+                                            <th>Nombre de notes</th>
+                                            <th>Dernière note</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        ${SCOLARIS_DATA.devoirs
-                                            .filter(d => d.classe_id === eleve.classe_id && d.statut === 'à_rendre')
-                                            .sort((a, b) => new Date(a.date_rendu) - new Date(b.date_rendu))
-                                            .slice(0, 5)
-                                            .map(devoir => {
-                                                const matiere = SCOLARIS_DATA.matieres.find(m => m.id === devoir.matiere_id);
+                                        ${Object.entries(notesParMatiere).map(([matiereId, notesMatiere]) => {
+                                            const matiere = SCOLARIS_DATA.matieres.find(m => m.id === parseInt(matiereId));
+                                            const moyenneMatiere = (notesMatiere.reduce((sum, n) => sum + n.valeur, 0) / notesMatiere.length).toFixed(2);
+                                            const derniereNote = notesMatiere.sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+                                            const noteClass = moyenneMatiere < 10 ? 'badge-danger' : 
+                                                             moyenneMatiere < 12 ? 'badge-warning' : 
+                                                             moyenneMatiere < 14 ? 'badge-primary' : 'badge-success';
+                                            
+                                            return `
+                                            <tr>
+                                                <td><strong>${matiere ? matiere.nom : 'Inconnu'}</strong></td>
+                                                <td><span class="badge ${noteClass}">${moyenneMatiere}/20</span></td>
+                                                <td>${notesMatiere.length}</td>
+                                                <td>${derniereNote ? derniereNote.valeur.toFixed(2) + '/20 (' + formatDate(derniereNote.date) + ')' : 'Aucune'}</td>
+                                            </tr>`;
+                                        }).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>`;
+                }).join('')}
+                
+                ${enfants.length === 0 ? `
+                <div class="form-container" style="text-align: center; padding: 40px;">
+                    <i class="fas fa-child" style="font-size: 3rem; color: #ddd; margin-bottom: 20px;"></i>
+                    <h3 style="color: #666; margin-bottom: 15px;">Aucun enfant associé</h3>
+                    <p style="color: #888; margin-bottom: 25px;">Contactez l'établissement pour associer vos enfants.</p>
+                </div>` : ''}`;
+            
+            setActiveMenu('notes_enfants');
+        }
+
+        function afficherAbsencesEnfants() {
+            const enfants = SCOLARIS_DATA.eleves.filter(e => 
+                e.responsable_1 === utilisateurCourant.nom || 
+                e.email_responsable_1 === utilisateurCourant.email
+            );
+            
+            document.getElementById('contenuPrincipal').innerHTML = `
+                <h1 style="margin-bottom: 25px; color: var(--couleur-principale);">Absences de mes enfants</h1>
+                
+                ${enfants.map(enfant => {
+                    const classe = SCOLARIS_DATA.classes.find(c => c.id === enfant.classe_id);
+                    const absences = SCOLARIS_DATA.absences.filter(a => a.eleve_id === enfant.id);
+                    const absencesJustifiees = absences.filter(a => a.justifiee).length;
+                    const absencesNonJustifiees = absences.length - absencesJustifiees;
+                    
+                    return `
+                    <div class="form-container" style="margin-bottom: 30px;">
+                        <h3 class="form-title">${enfant.prenom} ${enfant.nom} - ${classe ? classe.nom : ''}</h3>
+                        <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+                            <div class="card" style="flex: 1; margin-bottom: 0;">
+                                <div class="card-title">Total des absences</div>
+                                <div class="card-value">${absences.length}</div>
+                                <div class="card-subtitle">Cette année</div>
+                            </div>
+                            <div class="card" style="flex: 1; margin-bottom: 0;">
+                                <div class="card-title">Absences justifiées</div>
+                                <div class="card-value">${absencesJustifiees}</div>
+                                <div class="card-subtitle">Avec justificatif</div>
+                            </div>
+                            <div class="card" style="flex: 1; margin-bottom: 0;">
+                                <div class="card-title">Absences non justifiées</div>
+                                <div class="card-value">${absencesNonJustifiees}</div>
+                                <div class="card-subtitle">Sans justificatif</div>
+                            </div>
+                        </div>
+                        
+                        ${absences.length > 0 ? `
+                        <div class="table-container">
+                            <div class="table-content">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Type</th>
+                                            <th>Justifiée</th>
+                                            <th>Motif</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${absences.sort((a, b) => new Date(b.date) - new Date(a.date))
+                                            .map(absence => {
+                                                const justifieeBadge = absence.justifiee ? 
+                                                    '<span class="badge badge-success">Oui</span>' : 
+                                                    '<span class="badge badge-danger">Non</span>';
+                                                const typeBadge = absence.type === 'complet' ? 
+                                                    '<span class="badge badge-warning">Complète</span>' : 
+                                                    '<span class="badge badge-info">Partielle</span>';
+                                                
                                                 return `
                                                 <tr>
-                                                    <td>${matiere ? matiere.nom : 'Inconnu'}</td>
-                                                    <td>${devoir.titre}</td>
-                                                    <td>${formatDate(devoir.date_rendu)}</td>
-                                                    <td><span class="badge badge-warning">À rendre</span></td>
+                                                    <td>${formatDate(absence.date)}</td>
+                                                    <td>${typeBadge}</td>
+                                                    <td>${justifieeBadge}</td>
+                                                    <td>${absence.motif || ''}</td>
                                                 </tr>`;
                                             }).join('')}
                                     </tbody>
                                 </table>
                             </div>
+                        </div>` : `
+                        <div style="text-align: center; padding: 20px; color: #666;">
+                            <i class="fas fa-check-circle" style="font-size: 3rem; color: #ddd; margin-bottom: 10px;"></i>
+                            <p>Aucune absence enregistrée</p>
+                        </div>`}
+                    </div>`;
+                }).join('')}
+                
+                ${enfants.length === 0 ? `
+                <div class="form-container" style="text-align: center; padding: 40px;">
+                    <i class="fas fa-child" style="font-size: 3rem; color: #ddd; margin-bottom: 20px;"></i>
+                    <h3 style="color: #666; margin-bottom: 15px;">Aucun enfant associé</h3>
+                    <p style="color: #888; margin-bottom: 25px;">Contactez l'établissement pour associer vos enfants.</p>
+                </div>` : ''}`;
+            
+            setActiveMenu('absences_enfants');
+        }
+
+        function afficherObservationsEnfants() {
+            const enfants = SCOLARIS_DATA.eleves.filter(e => 
+                e.responsable_1 === utilisateurCourant.nom || 
+                e.email_responsable_1 === utilisateurCourant.email
+            );
+            
+            document.getElementById('contenuPrincipal').innerHTML = `
+                <h1 style="margin-bottom: 25px; color: var(--couleur-principale);">Observations de mes enfants</h1>
+                
+                ${enfants.map(enfant => {
+                    const classe = SCOLARIS_DATA.classes.find(c => c.id === enfant.classe_id);
+                    const observations = (SCOLARIS_DATA.observations || []).filter(o => o.eleve_id === enfant.id);
+                    const observationsPositives = observations.filter(o => o.type === 'positive').length;
+                    const observationsNegatives = observations.filter(o => o.type === 'negative').length;
+                    const observationsNeutres = observations.filter(o => o.type === 'neutre').length;
+                    
+                    return `
+                    <div class="form-container" style="margin-bottom: 30px;">
+                        <h3 class="form-title">${enfant.prenom} ${enfant.nom} - ${classe ? classe.nom : ''}</h3>
+                        <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+                            <div class="card" style="flex: 1; margin-bottom: 0;">
+                                <div class="card-title">Positives</div>
+                                <div class="card-value">${observationsPositives}</div>
+                                <div class="card-subtitle">Encouragements</div>
+                            </div>
+                            <div class="card" style="flex: 1; margin-bottom: 0;">
+                                <div class="card-title">Négatives</div>
+                                <div class="card-value">${observationsNegatives}</div>
+                                <div class="card-subtitle">À améliorer</div>
+                            </div>
+                            <div class="card" style="flex: 1; margin-bottom: 0;">
+                                <div class="card-title">Neutres</div>
+                                <div class="card-value">${observationsNeutres}</div>
+                                <div class="card-subtitle">Informatives</div>
+                            </div>
                         </div>
+                        
+                        ${observations.length > 0 ? `
+                        <div id="listeObservationsEnfant">
+                            ${observations.map(observation => {
+                                const matiere = observation.matiere_id ? 
+                                    SCOLARIS_DATA.matieres.find(m => m.id === observation.matiere_id) : null;
+                                const typeClass = observation.type === 'positive' ? 'observation-positive' : 
+                                                 observation.type === 'negative' ? 'observation-negative' : 'observation-neutre';
+                                const typeIcon = observation.type === 'positive' ? 'fa-thumbs-up' : 
+                                                observation.type === 'negative' ? 'fa-thumbs-down' : 'fa-minus';
+                                const typeColor = observation.type === 'positive' ? '#27AE60' : 
+                                                 observation.type === 'negative' ? '#E74C3C' : '#95A5A6';
+                                
+                                return `
+                                <div class="observation-card ${typeClass}">
+                                    <div class="cours-header">
+                                        <div>
+                                            <i class="fas ${typeIcon}" style="color: ${typeColor}; margin-right: 8px;"></i>
+                                            <strong>${observation.titre}</strong>
+                                            ${matiere ? ' - ' + matiere.nom : ''}
+                                        </div>
+                                        <div class="cours-horaire">${formatDate(observation.date)}</div>
+                                    </div>
+                                    <p style="color: #666; margin-top: 10px;">${observation.description}</p>
+                                    <div style="margin-top: 10px; font-size: 0.9rem; color: #888;">
+                                        Par ${observation.auteur_nom || 'Inconnu'}
+                                    </div>
+                                </div>`;
+                            }).join('')}
+                        </div>` : `
+                        <div style="text-align: center; padding: 20px; color: #666;">
+                            <i class="fas fa-sticky-note" style="font-size: 3rem; color: #ddd; margin-bottom: 10px;"></i>
+                            <p>Aucune observation enregistrée</p>
+                        </div>`}
+                    </div>`;
+                }).join('')}
+                
+                ${enfants.length === 0 ? `
+                <div class="form-container" style="text-align: center; padding: 40px;">
+                    <i class="fas fa-child" style="font-size: 3rem; color: #ddd; margin-bottom: 20px;"></i>
+                    <h3 style="color: #666; margin-bottom: 15px;">Aucun enfant associé</h3>
+                    <p style="color: #888; margin-bottom: 25px;">Contactez l'établissement pour associer vos enfants.</p>
+                </div>` : ''}`;
+            
+            setActiveMenu('observations_enfants');
+        }
+
+        // ============================================
+        // FONCTIONS POUR LES ENSEIGNANTS
+        // ============================================
+        function afficherGestionEnseignants() {
+            const enseignants = SCOLARIS_DATA.utilisateurs.filter(u => u.role === 'enseignant');
+            
+            document.getElementById('contenuPrincipal').innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h1 style="color: var(--couleur-principale);">Gestion des enseignants</h1>
+                    <button class="btn btn-primary" onclick="ouvrirModalNouvelEnseignant()">
+                        <i class="fas fa-plus"></i> Nouvel enseignant
+                    </button>
+                </div>
+                
+                <div class="table-container">
+                    <div class="table-header">
+                        <div class="table-title">Enseignants (${enseignants.length})</div>
+                    </div>
+                    <div class="table-content">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Prénom</th>
+                                    <th>Email</th>
+                                    <th>Téléphone</th>
+                                    <th>Matières</th>
+                                    <th>Classes</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${enseignants.map(enseignant => {
+                                    const matieres = enseignant.matieres ? 
+                                        enseignant.matieres.map(mId => {
+                                            const matiere = SCOLARIS_DATA.matieres.find(m => m.id === mId);
+                                            return matiere ? matiere.nom : 'Inconnu';
+                                        }).join(', ') : 'Non assigné';
+                                    
+                                    const classes = SCOLARIS_DATA.classes.filter(c => 
+                                        c.prof_principal_id === enseignant.id
+                                    ).map(c => c.nom).join(', ') || 'Aucune';
+                                    
+                                    return `
+                                    <tr>
+                                        <td><strong>${enseignant.nom}</strong></td>
+                                        <td>${enseignant.prenom}</td>
+                                        <td>${enseignant.email || ''}</td>
+                                        <td>${enseignant.telephone || ''}</td>
+                                        <td>${matieres}</td>
+                                        <td>${classes}</td>
+                                        <td>${enseignant.actif ? 
+                                            '<span class="badge badge-success">Actif</span>' : 
+                                            '<span class="badge badge-danger">Inactif</span>'}</td>
+                                        <td>
+                                            <div style="display: flex; gap: 5px;">
+                                                <button class="btn btn-secondary btn-small" onclick="modifierEnseignant(${enseignant.id})">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="btn btn-danger btn-small" onclick="supprimerEnseignant(${enseignant.id})">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>`;
+                                }).join('')}
+                            </tbody>
+                        </table>
                     </div>
                 </div>`;
             
-            setActiveMenu('dashboard');
+            setActiveMenu('enseignants');
         }
 
-        // Initialiser au chargement
+        // ============================================
+        // FONCTIONS POUR LE TABLEAU DE BORD PARENT
+        // ============================================
+        function afficherTableauDeBordParent() {
+            afficherTableauDeBord();
+        }
+
+        // ============================================
+        // INITIALISATION
+        // ============================================
         document.addEventListener('DOMContentLoaded', function() {
             // Vérifier si un utilisateur est déjà connecté
             const userStr = localStorage.getItem('SCOLARIS_USER');
